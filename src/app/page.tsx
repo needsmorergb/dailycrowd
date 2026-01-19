@@ -1,6 +1,55 @@
 import Link from 'next/link'
+import prisma from '@/lib/prisma'
 
-export default function LandingPage() {
+// Make this a dynamic page that fetches real data
+export const dynamic = 'force-dynamic'
+
+async function getTodaysPot() {
+  try {
+    // Find today's contest
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const tomorrow = new Date(today)
+    tomorrow.setDate(tomorrow.getDate() + 1)
+
+    const contest = await prisma.contest.findFirst({
+      where: {
+        contestDate: {
+          gte: today,
+          lt: tomorrow
+        }
+      },
+      include: {
+        _count: {
+          select: { entries: true }
+        }
+      }
+    })
+
+    if (!contest) return { entries: 0, pot: 0 }
+
+    // $1 per daily entry
+    const dailyPot = contest._count.entries * 1
+
+    // For monthly subs, we'd need to track active subscribers
+    // For now, just show daily entries pot
+    return {
+      entries: contest._count.entries,
+      pot: dailyPot
+    }
+  } catch (error) {
+    console.error('Error fetching pot:', error)
+    return { entries: 0, pot: 0 }
+  }
+}
+
+export default async function LandingPage() {
+  const { entries, pot } = await getTodaysPot()
+
+  // Show a minimum or "building" state when pot is small
+  const displayPot = pot > 0 ? `$${pot.toLocaleString()}` : '$0'
+  const potLabel = entries > 0 ? `${entries} entries today` : 'Be the first to enter!'
+
   return (
     <div className="flex flex-col gap-16 pb-20">
 
@@ -36,9 +85,9 @@ export default function LandingPage() {
             <div className="glass-card neon-border px-12 py-8 rounded-2xl animate-pulse-glow">
               <div className="text-sm font-bold tracking-widest text-muted-foreground uppercase mb-2">Today's Pot</div>
               <div className="text-6xl md:text-8xl font-black text-white glow-text font-mono">
-                $1,250
+                {displayPot}
               </div>
-              <div className="text-xs text-muted-foreground mt-2">Based on current entries</div>
+              <div className="text-xs text-muted-foreground mt-2">{potLabel}</div>
             </div>
           </div>
 
@@ -59,27 +108,27 @@ export default function LandingPage() {
         <div className="glass-card p-8 rounded-2xl">
           <div className="grid md:grid-cols-3 gap-8 text-center mb-8">
             <div>
-              <div className="text-4xl font-black text-secondary mb-2">100%</div>
-              <div className="text-sm text-muted-foreground">of Daily Passes</div>
-              <div className="text-xs text-muted-foreground mt-1">($1 × entries)</div>
+              <div className="text-4xl font-black text-secondary mb-2">$1</div>
+              <div className="text-sm text-muted-foreground">Per Daily Entry</div>
+              <div className="text-xs text-muted-foreground mt-1">Goes straight to pot</div>
             </div>
             <div>
-              <div className="text-4xl font-black text-white mb-2">+</div>
-              <div className="text-sm text-muted-foreground">Portion of</div>
-              <div className="text-xs text-muted-foreground mt-1">Monthly Subs</div>
+              <div className="text-4xl font-black text-white mb-2">×</div>
+              <div className="text-sm text-muted-foreground">Number of</div>
+              <div className="text-xs text-muted-foreground mt-1">Players Today</div>
             </div>
             <div>
               <div className="text-4xl font-black text-primary mb-2">= POT</div>
               <div className="text-sm text-muted-foreground">Winner Takes All</div>
-              <div className="text-xs text-muted-foreground mt-1">Paid via Whop</div>
+              <div className="text-xs text-muted-foreground mt-1">Paid daily via Whop</div>
             </div>
           </div>
           <div className="border-t border-white/10 pt-6 text-center">
             <p className="text-muted-foreground text-sm">
-              <strong className="text-white">Example:</strong> 500 daily entries ($500) + $750 from monthly subs = <strong className="text-secondary">$1,250 pot</strong>
+              <strong className="text-white">Example:</strong> 100 players = <strong className="text-secondary">$100 pot</strong> • 1,000 players = <strong className="text-secondary">$1,000 pot</strong>
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              Pot grows until the daily deadline. The closer your guess to the median, the more you win!
+              The more players join, the bigger the pot. Grows until the daily deadline!
             </p>
           </div>
         </div>
@@ -131,7 +180,7 @@ export default function LandingPage() {
                 <div className="text-4xl font-bold mb-6">$1</div>
                 <ul className="text-left space-y-3 mb-8 text-sm text-muted-foreground flex-1">
                   <li>✓ 1 Entry today</li>
-                  <li>✓ Standard Stats</li>
+                  <li>✓ Your $1 goes to pot</li>
                   <li>✓ Win the full pot</li>
                 </ul>
                 <Link href="/account" className="btn btn-secondary w-full">Buy Pass</Link>
@@ -154,16 +203,16 @@ export default function LandingPage() {
                   marginLeft: 'auto',
                   marginRight: 'auto'
                 }}>
-                  Most Popular
+                  Best Value
                 </div>
                 <div className="text-sm uppercase tracking-wider text-primary mb-4">Monthly Access</div>
                 <div className="text-5xl font-black mb-1">$19</div>
-                <div className="text-xs text-muted-foreground mb-6">/ month</div>
+                <div className="text-xs text-muted-foreground mb-6">/ month (~$0.63/day)</div>
                 <ul className="text-left space-y-3 mb-8 text-sm text-white flex-1">
                   <li>✓ Daily Entries included</li>
+                  <li>✓ Never miss a day</li>
                   <li>✓ Advanced Analytics</li>
                   <li>✓ "Voted" Badge</li>
-                  <li>✓ Contributes to pot</li>
                 </ul>
                 <Link href="/account" className="btn btn-primary w-full" style={{ boxShadow: '0 10px 15px rgba(124,58,237,0.25)' }}>Subscribe</Link>
               </div>
