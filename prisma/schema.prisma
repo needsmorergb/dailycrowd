@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String?
+  whopUserId  String?  @unique
+  role        String   @default("user") // "user" | "admin"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries       Entry[]
+  wonContests   ContestResult[] @relation("Winner")
+  accounts      Account[]
+  sessions      Session[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Contest {
+  id          String   @id @default(cuid())
+  contestDate DateTime @unique // Date of the contest (unique per day)
+  status      String   @default("open") // "open" | "locked" | "settled"
+  opensAt     DateTime
+  locksAt     DateTime
+  settledAt   DateTime?
+  rangeMin    Int      @default(1)
+  rangeMax    Int      @default(100)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  entries Entry[]
+  result  ContestResult?
+}
+
+model Entry {
+  id        String   @id @default(cuid())
+  contestId String
+  userId    String
+  number    Int      // 1-100
+  createdAt DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([contestId, userId]) // One entry per user per contest
+  @@index([contestId])
+  @@index([userId])
+}
+
+model ContestResult {
+  id                String   @id @default(cuid())
+  contestId         String   @unique
+  median            Float
+  mean              Float
+  mode              Int
+  min               Int
+  max               Int
+  totalEntries      Int
+  winnerUserId      String
+  winnerEntryNumber Int
+  winnerTime        DateTime
+  distribution      String   // JSON string of counts per number
+  createdAt         DateTime @default(now())
+
+  contest Contest @relation(fields: [contestId], references: [id], onDelete: Cascade)
+  winner  User    @relation("Winner", fields: [winnerUserId], references: [id])
+}
