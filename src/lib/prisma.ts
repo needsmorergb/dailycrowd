@@ -10,10 +10,11 @@ const prismaClientSingleton = () => {
     const connectionString = process.env.TURSO_DATABASE_URL
 
     if (connectionString?.startsWith('libsql://') || connectionString?.startsWith('https://')) {
-        const adapter = new PrismaLibSql({
+        const libsql = createClient({
             url: connectionString,
             authToken: process.env.TURSO_AUTH_TOKEN
         })
+        const adapter = new PrismaLibSql(libsql)
         return new PrismaClient({ adapter })
     }
 
