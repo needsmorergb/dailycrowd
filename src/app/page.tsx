@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 // Make this a dynamic page that fetches real data
 export const dynamic = 'force-dynamic'
@@ -26,29 +26,29 @@ async function getTodaysPot() {
       }
     })
 
-    if (!contest) return { entries: 0, pot: 0 }
+    if (!contest) return { entries: 0, pot: 0, gross: 0 }
 
-    // $1 per daily entry
-    const dailyPot = contest._count.entries * 1
+    // $1 per daily entry, 90% goes to pot (10% platform fee)
+    const gross = contest._count.entries * 1
+    const pot = Math.floor(gross * 0.9) // 90% to winner
 
-    // For monthly subs, we'd need to track active subscribers
-    // For now, just show daily entries pot
     return {
       entries: contest._count.entries,
-      pot: dailyPot
+      pot: pot,
+      gross: gross
     }
   } catch (error) {
     console.error('Error fetching pot:', error)
-    return { entries: 0, pot: 0 }
+    return { entries: 0, pot: 0, gross: 0 }
   }
 }
 
 export default async function LandingPage() {
-  const { entries, pot } = await getTodaysPot()
+  const { entries, pot, gross } = await getTodaysPot()
 
-  // Show a minimum or "building" state when pot is small
+  // Show the actual pot (90% of entries)
   const displayPot = pot > 0 ? `$${pot.toLocaleString()}` : '$0'
-  const potLabel = entries > 0 ? `${entries} entries today` : 'Be the first to enter!'
+  const potLabel = entries > 0 ? `${entries} entries • 90% to winner` : 'Be the first to enter!'
 
   return (
     <div className="flex flex-col gap-16 pb-20">
