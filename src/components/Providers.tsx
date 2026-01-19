@@ -1,3 +1,5 @@
+'use client'
+
 import { SessionProvider } from 'next-auth/react'
 import { SolanaProvider } from './SolanaProvider'
 
