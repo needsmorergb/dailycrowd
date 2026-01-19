@@ -61,11 +61,9 @@ export default function AccountPage() {
                                         Connect your Whop account to access contests
                                     </div>
                                     <a
-                                        href="https://whop.com"
+                                        href="/api/auth/whop/login"
                                         className="btn btn-primary"
                                         style={{ width: '100%', marginTop: '12px' }}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
                                     >
                                         Connect Whop Account
                                     </a>
