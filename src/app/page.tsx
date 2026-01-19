@@ -16,11 +16,11 @@ async function getStats() {
     })
 
     // Get recent winners from settled contests
-    const recentResults = await prisma.result.findMany({
+    const recentResults = await prisma.contestResult.findMany({
       take: 4,
-      orderBy: { contest: { contestDate: 'desc' } },
+      orderBy: { createdAt: 'desc' },
       include: {
-        contest: true
+        winner: true
       }
     })
 
@@ -29,8 +29,8 @@ async function getStats() {
       activePlayers: totalEntries,
       historicalMedian: 48,
       hasWinners: settledContests > 0,
-      recentWinners: recentResults.map((r, i) => ({
-        name: `Winner_${i + 1}`,
+      recentWinners: recentResults.map((r) => ({
+        name: r.winner?.name || `Winner`,
         amount: 1000,
         number: r.winnerEntryNumber
       }))
