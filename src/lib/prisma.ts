@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { PrismaLibSql } from '@prisma/adapter-libsql'
+import { PrismaLibSQL } from '@prisma/adapter-libsql'
 import { createClient } from '@libsql/client'
 
 const globalForPrisma = globalThis as unknown as {
@@ -14,7 +14,7 @@ const prismaClientSingleton = () => {
             url: connectionString,
             authToken: process.env.TURSO_AUTH_TOKEN
         })
-        const adapter = new PrismaLibSql(libsql)
+        const adapter = new PrismaLibSQL(libsql)
         return new PrismaClient({ adapter })
     }
 
