@@ -2,23 +2,23 @@ export default function RulesPage() {
     return (
         <div className="container max-w-4xl py-12">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-black mb-2 text-white">Official Rules</h1>
+                <h1 className="text-4xl font-black mb-2">Official Rules</h1>
                 <p className="text-muted-foreground">How CROWD works — full transparency</p>
             </div>
 
-            <div className="space-y-8">
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">1. Overview</h2>
-                    <p className="text-muted-foreground">
+            <div className="space-y-6">
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">1. Overview</h2>
+                    <p className="text-muted-foreground text-sm">
                         CROWD is a daily prediction contest where participants guess what
                         number the crowd will choose. The goal is to pick the number closest to
-                        the <strong className="text-white">median</strong> of all entries.
+                        the <strong className="text-white">median</strong> of all entries and win the <strong className="text-primary">$1,000 daily prize</strong>.
                     </p>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">2. Eligibility</h2>
-                    <ul className="space-y-2 text-muted-foreground">
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">2. Eligibility</h2>
+                    <ul className="space-y-2 text-muted-foreground text-sm">
                         <li>• You must be 18 years or older to participate</li>
                         <li>• You must have an active Whop membership or daily entry pass</li>
                         <li>• One entry per person per contest</li>
@@ -26,145 +26,113 @@ export default function RulesPage() {
                     </ul>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">3. How to Enter</h2>
-                    <ul className="space-y-2 text-muted-foreground mb-4">
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">3. How to Enter</h2>
+                    <ul className="space-y-2 text-muted-foreground text-sm mb-4">
                         <li>• Sign in to your account</li>
                         <li>• Navigate to "Today's Contest"</li>
-                        <li>• Enter a whole number between 1 and 100 (inclusive)</li>
-                        <li>• Submit before the lock time</li>
+                        <li>• Use the slider to select a number between 1 and 100</li>
+                        <li>• Submit before the lock time (7:00 PM PT)</li>
                     </ul>
-                    <p className="text-sm bg-warning/10 text-warning p-3 rounded-lg">
-                        <strong>Important:</strong> Entries cannot be changed or withdrawn once submitted.
+                    <p className="text-xs bg-warning/10 text-warning p-3 rounded-lg">
+                        <strong>Important:</strong> Entries cannot be changed once submitted.
                     </p>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">4. Lock Time</h2>
-                    <p className="text-muted-foreground">
-                        Each contest has a posted lock time, typically <strong className="text-white">7:00 PM Pacific Time</strong>.
-                        No entries are accepted after this time. The countdown timer shows
-                        exactly how much time remains.
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">4. Determining the Winner</h2>
+                    <p className="text-muted-foreground text-sm mb-3">
+                        After entries lock, we calculate the median of all entries:
                     </p>
-                </section>
-
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">5. Determining the Winner</h2>
-                    <p className="text-muted-foreground mb-4">
-                        After entries lock, we calculate the median of all valid entries:
-                    </p>
-                    <ul className="space-y-2 text-muted-foreground mb-4">
+                    <ul className="space-y-2 text-muted-foreground text-sm mb-3">
                         <li>• All entries are sorted from lowest to highest</li>
                         <li>• The middle value is the median</li>
-                        <li>• If there's an even number of entries, the median is the average of the two middle values</li>
+                        <li>• The entry <strong className="text-white">closest to the median</strong> wins</li>
                     </ul>
-                    <p className="text-white font-semibold">
-                        The entry closest to the median wins!
-                    </p>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">6. Tie-Breakers</h2>
-                    <p className="text-muted-foreground mb-4">
-                        If multiple entries are equally close to the median:
-                    </p>
-                    <ol className="space-y-3 text-muted-foreground list-decimal pl-5">
-                        <li>
-                            <strong className="text-white">Tie-breaker #1:</strong> Preference to entries that did not exceed
-                            the median. ("Under" beats "over" when equally distant.)
-                        </li>
-                        <li>
-                            <strong className="text-white">Tie-breaker #2:</strong> If still tied, the earliest submitted
-                            entry wins. Timestamps are recorded when you click submit.
-                        </li>
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">5. Tie-Breakers</h2>
+                    <ol className="space-y-2 text-muted-foreground text-sm list-decimal pl-5">
+                        <li><strong className="text-white">Under beats over</strong> — if equally distant, entry below median wins</li>
+                        <li><strong className="text-white">Earlier wins</strong> — if still tied, earliest submission wins</li>
                     </ol>
                 </section>
 
-                {/* PRIZE & FEE BREAKDOWN - TRANSPARENCY */}
-                <section className="glass-card p-8 rounded-2xl border-2 border-secondary/30 bg-secondary/5">
-                    <h2 className="text-xl font-bold mb-4 text-secondary">💰 7. Prize Pool & Platform Fee</h2>
-                    <p className="text-muted-foreground mb-6">
-                        We believe in <strong className="text-white">full transparency</strong>. Here's exactly how the money works:
+                {/* PRIZE & FEE BREAKDOWN */}
+                <section className="glass-card neon-border p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-4 text-primary">💰 6. Prize Pool & Fees</h2>
+                    <p className="text-muted-foreground text-sm mb-4">
+                        Full transparency on how the money works:
                     </p>
 
-                    <div className="grid md:grid-cols-2 gap-6 mb-6">
-                        <div className="bg-background/50 p-6 rounded-xl border border-white/10">
-                            <h3 className="font-bold text-white mb-3">Daily Entry ($1)</h3>
-                            <div className="space-y-2 text-sm">
+                    <div className="grid md:grid-cols-2 gap-4 mb-4">
+                        <div className="bg-muted p-4 rounded-xl">
+                            <h3 className="font-bold text-white text-sm mb-3">Daily Entry — $5</h3>
+                            <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">To Prize Pool:</span>
-                                    <span className="text-success font-bold">90¢ (90%)</span>
+                                    <span className="text-muted-foreground">Your entry:</span>
+                                    <span className="text-white font-bold">$5</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Platform Fee:</span>
-                                    <span className="text-primary font-bold">10¢ (10%)</span>
+                                    <span className="text-muted-foreground">Daily prize:</span>
+                                    <span className="text-primary font-bold">$1,000</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-background/50 p-6 rounded-xl border border-white/10">
-                            <h3 className="font-bold text-white mb-3">Monthly Pass ($19/mo)</h3>
-                            <div className="space-y-2 text-sm">
+                        <div className="bg-muted p-4 rounded-xl">
+                            <h3 className="font-bold text-white text-sm mb-3">Monthly Pass — $49/mo</h3>
+                            <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Includes:</span>
-                                    <span className="text-white">Daily entries</span>
+                                    <span className="text-muted-foreground">Daily entries:</span>
+                                    <span className="text-white">Included</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Platform Revenue:</span>
-                                    <span className="text-primary font-bold">100%</span>
+                                    <span className="text-muted-foreground">Savings vs daily:</span>
+                                    <span className="text-success font-bold">$100+/mo</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white/5 p-4 rounded-lg text-center">
+                    <div className="bg-primary/10 p-4 rounded-lg text-center border border-primary/20">
                         <p className="text-sm text-muted-foreground">
-                            <strong className="text-white">Example:</strong> 100 daily entries = $100 gross →
-                            <span className="text-success"> $90 to winner</span>,
-                            <span className="text-primary"> $10 platform fee</span>
+                            <strong className="text-white">$1,000 prize</strong> paid daily to the winner via Whop
                         </p>
                     </div>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">8. Results & Transparency</h2>
-                    <p className="text-muted-foreground mb-4">
-                        After settlement, the following information is published:
-                    </p>
-                    <ul className="space-y-2 text-muted-foreground">
-                        <li>• The winning number</li>
-                        <li>• The calculated median, mean, mode, minimum, and maximum</li>
-                        <li>• Total number of entries</li>
-                        <li>• Total prize pool and winner payout</li>
-                        <li>• A histogram showing the distribution of all entries</li>
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">7. Results & Transparency</h2>
+                    <ul className="space-y-2 text-muted-foreground text-sm">
+                        <li>• Winning number published immediately</li>
+                        <li>• Full statistics: median, mean, mode, min, max</li>
+                        <li>• Entry distribution histogram</li>
+                        <li>• Total prize payout</li>
                     </ul>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">9. Disqualification</h2>
-                    <p className="text-muted-foreground mb-4">
-                        We reserve the right to disqualify entries that:
-                    </p>
-                    <ul className="space-y-2 text-muted-foreground">
-                        <li>• Violate the one-entry-per-person rule</li>
-                        <li>• Are submitted from multiple accounts by the same person</li>
-                        <li>• Involve any form of cheating or manipulation</li>
-                        <li>• Violate our Terms of Service</li>
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">8. Disqualification</h2>
+                    <ul className="space-y-2 text-muted-foreground text-sm">
+                        <li>• Multiple accounts = disqualified</li>
+                        <li>• Any form of cheating = disqualified</li>
+                        <li>• Terms of Service violations = disqualified</li>
                     </ul>
                 </section>
 
-                <section className="glass-card p-8 rounded-2xl">
-                    <h2 className="text-xl font-bold mb-4 text-primary">10. Contact</h2>
-                    <p className="text-muted-foreground">
-                        For questions about these rules or disputes about contest results,
-                        please contact us through our Whop page.
+                <section className="glass-card p-6 rounded-2xl">
+                    <h2 className="text-lg font-bold mb-3 text-primary">9. Contact</h2>
+                    <p className="text-muted-foreground text-sm">
+                        Questions? Contact us through our Whop page.
                     </p>
                 </section>
             </div>
 
-            <div className="mt-12 p-6 bg-white/5 rounded-xl text-center border border-white/5">
+            <div className="mt-8 p-4 bg-muted rounded-xl text-center">
                 <p className="text-xs text-muted-foreground">
-                    Last updated: January 2026 • Rules subject to change with notice
+                    Last updated: January 2026
                 </p>
             </div>
         </div>
