@@ -843,3 +843,52 @@ a:hover {
 .pl-5 {
   padding-left: 1.25rem;
 }
+
+/* Solana Wallet Adapter Overrides */
+.wallet-adapter-button {
+  background-color: var(--primary) !important;
+  color: #000000 !important;
+  font-family: inherit !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+  transition: all 0.2s ease !important;
+  height: 40px !important;
+  padding: 0 24px !important;
+  font-size: 14px !important;
+  line-height: 40px !important;
+}
+
+.wallet-adapter-button:hover {
+  background-color: #d8ff4d !important;
+  transform: translateY(-1px);
+  box-shadow: 0 0 20px rgba(200, 255, 0, 0.4);
+}
+
+.wallet-adapter-modal-wrapper {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 24px !important;
+  color: var(--foreground) !important;
+  font-family: inherit !important;
+}
+
+.wallet-adapter-modal-title {
+  color: var(--foreground) !important;
+  font-weight: 800 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  background: transparent !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
+  margin-bottom: 8px !important;
+}
+
+.wallet-adapter-dropdown-list {
+  background: var(--card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px !important;
+  padding: 8px !important;
+}

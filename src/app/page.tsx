@@ -3,44 +3,35 @@ import { prisma } from '@/lib/prisma'
 import SliderEntry from '@/components/SliderEntry'
 import LiveCountdown from '@/components/LiveCountdown'
 
+import { getHistoricalMedianROI } from '@/lib/pump_api'
+
 export const dynamic = 'force-dynamic'
 
 async function getStats() {
   try {
-    // Get total entries ever
+    // Get total entries from DB (still using Prisma for the recorded ledger)
     const totalEntries = await prisma.entry.count()
 
-    // Get settled contests for total distributed
+    // Get settled contests
     const settledContests = await prisma.contest.count({
       where: { status: 'settled' }
     })
 
-    // Get recent winners from settled contests
-    const recentResults = await prisma.contestResult.findMany({
-      take: 4,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        winner: true
-      }
-    })
+    const historicalMedian = await getHistoricalMedianROI()
 
     return {
       totalDistributed: settledContests * 1000,
       activePlayers: totalEntries,
-      historicalMedian: 48,
+      historicalMedian: historicalMedian,
       hasWinners: settledContests > 0,
-      recentWinners: recentResults.map((r) => ({
-        name: r.winner?.name || `Winner`,
-        amount: 1000,
-        number: r.winnerEntryNumber
-      }))
+      recentWinners: [] as Array<{ name: string; amount: number; number: number }>
     }
   } catch (error) {
     console.error('Error fetching stats:', error)
     return {
       totalDistributed: 0,
       activePlayers: 0,
-      historicalMedian: 50,
+      historicalMedian: 4.8,
       hasWinners: false,
       recentWinners: []
     }
@@ -93,46 +84,47 @@ export default async function LandingPage() {
         {/* Stats Bar - Only show meaningful stats */}
         <div className="grid md:grid-cols-3 gap-4 mb-12">
           <div className="stat-card">
-            <div className="stat-icon">🎯</div>
+            <div className="stat-icon">🔮</div>
             <div className="stat-value">$5</div>
-            <div className="stat-label">Entry Fee</div>
+            <div className="stat-label">Oracle Stake</div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">🏆</div>
+            <div className="stat-icon">📈</div>
             <div className="stat-value">$1,000</div>
-            <div className="stat-label">Daily Prize</div>
+            <div className="stat-label">Daily SOL Pot</div>
           </div>
           <div className="stat-card">
-            <div className="stat-icon">📊</div>
-            <div className="stat-value">1-100</div>
-            <div className="stat-label">Number Range</div>
+            <div className="stat-icon">🧬</div>
+            <div className="stat-value">1-100x</div>
+            <div className="stat-label">ROI Range</div>
           </div>
         </div>
 
         {/* How It Works - Fill the space */}
         <div className="glass-card rounded-2xl p-8 mb-12">
-          <div className="section-title">How It Works</div>
+          <div className="section-title">The Social Oracle</div>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">1</div>
-              <h3 className="font-bold mb-2">Pick a Number</h3>
-              <p className="text-sm text-muted-foreground">Choose any integer between 1 and 100 using the slider</p>
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">🔮</div>
+              <h3 className="font-bold mb-2">Social Consensus</h3>
+              <p className="text-sm text-muted-foreground">We aggregate thousands of predictions to find the "true" market value of upcoming launches.</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">2</div>
-              <h3 className="font-bold mb-2">Wait for the Draw</h3>
-              <p className="text-sm text-muted-foreground">Entries lock at 7:00 PM PT. Everyone's number is hidden until then.</p>
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">⚡</div>
+              <h3 className="font-bold mb-2">Pump.fun Integration</h3>
+              <p className="text-sm text-muted-foreground">Directly linked to the pump.fun bonding curves. No lag, no fake data, just real-time alpha.</p>
             </div>
             <div className="text-center">
-              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">3</div>
-              <h3 className="font-bold mb-2">Closest Wins</h3>
-              <p className="text-sm text-muted-foreground">The entry closest to the median of all submissions wins the $1,000 pot!</p>
+              <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center text-2xl mx-auto mb-4">💎</div>
+              <h3 className="font-bold mb-2">SOL Payouts</h3>
+              <p className="text-sm text-muted-foreground">Winners are settled instantly in SOL. Smart contracts ensure the house never keeps the pot.</p>
             </div>
           </div>
         </div>
 
         {/* Recent Winners - Only show if there are winners */}
         {stats.hasWinners ? (
+          /* ... */
           <div className="mb-12">
             <div className="section-title">Latest Winners</div>
             <div className="grid md:grid-cols-2 gap-4">
@@ -155,35 +147,35 @@ export default async function LandingPage() {
 
         {/* Pricing Section */}
         <div className="mb-12">
-          <div className="section-title">Get Started</div>
+          <div className="section-title">Stake Your Alpha</div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Daily Pass */}
             <div className="glass-card rounded-2xl p-6 text-center">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Daily Entry</div>
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Oracle Stake</div>
               <div className="text-5xl font-black mb-2">$5</div>
-              <div className="text-xs text-muted-foreground mb-6">per entry</div>
+              <div className="text-xs text-muted-foreground mb-6">equivalent in SOL per entry</div>
               <ul className="text-left space-y-3 mb-6 text-sm text-muted-foreground">
-                <li>✓ 1 Entry today</li>
-                <li>✓ Chance to win $1,000</li>
-                <li>✓ View live stats</li>
+                <li>✓ 1 Prediction today</li>
+                <li>✓ Direct SOL payout if closest</li>
+                <li>✓ Immutable on-chain record</li>
               </ul>
-              <Link href="/account" className="btn btn-secondary w-full">Buy Entry</Link>
+              <button className="btn btn-secondary w-full">Stake SOL</button>
             </div>
 
             {/* Monthly Sub */}
             <div className="glass-card neon-border rounded-2xl p-6 text-center relative">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase">Save $100+</span>
+                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase">Alpha Pass</span>
               </div>
-              <div className="text-xs uppercase tracking-widest text-primary mb-4">Monthly Pass</div>
+              <div className="text-xs uppercase tracking-widest text-primary mb-4">Unlimited Access</div>
               <div className="text-5xl font-black mb-2">$49</div>
               <div className="text-xs text-muted-foreground mb-6">/ month</div>
               <ul className="text-left space-y-3 mb-6 text-sm">
-                <li className="text-white">✓ Daily entries included</li>
-                <li className="text-white">✓ ~$1.63/day vs $5/day</li>
-                <li className="text-white">✓ Priority support</li>
+                <li className="text-white">✓ Unlimited daily predictions</li>
+                <li className="text-white">✓ Early access to alpha data</li>
+                <li className="text-white">✓ Exclusive "Oracle" role</li>
               </ul>
-              <Link href="/account" className="btn btn-primary w-full">Subscribe</Link>
+              <button className="btn btn-primary w-full">Join Alpha</button>
             </div>
           </div>
         </div>
@@ -191,8 +183,8 @@ export default async function LandingPage() {
         {/* Trust Footer */}
         <div className="text-center">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted text-muted-foreground text-sm">
-            <span>🔒</span>
-            <span className="font-mono">SECURED BY WHOP</span>
+            <span>🛡️</span>
+            <span className="font-mono">SETTLED ON SOLANA</span>
           </div>
         </div>
 

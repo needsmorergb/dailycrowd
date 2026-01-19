@@ -2,95 +2,87 @@ export default function RulesPage() {
     return (
         <div className="container max-w-4xl py-12">
             <div className="text-center mb-12">
-                <h1 className="text-4xl font-black mb-2">Official Rules</h1>
-                <p className="text-muted-foreground">How CROWD works — full transparency</p>
+                <h1 className="text-4xl font-black mb-2">Oracle Protocol Rules</h1>
+                <p className="text-muted-foreground text-sm tracking-widest uppercase">The Social Intelligence Layer for Solana</p>
             </div>
 
             <div className="space-y-6">
                 <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">1. Overview</h2>
+                    <h2 className="text-lg font-bold mb-3 text-primary">1. The Protocol</h2>
                     <p className="text-muted-foreground text-sm">
-                        CROWD is a daily prediction contest where participants guess what
-                        number the crowd will choose. The goal is to pick the number closest to
-                        the <strong className="text-white">median</strong> of all entries and win the <strong className="text-primary">$1,000 daily prize</strong>.
+                        CROWD is a decentralized social oracle. participants use their "market intuition" to predict the
+                        <strong className="text-white"> 1-hour ROI </strong> of new tokens launching on
+                        <strong className="text-primary"> pump.fun</strong>. By aggregating individual predictions, we find the
+                        true market consensus.
                     </p>
                 </section>
 
                 <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">2. Eligibility</h2>
+                    <h2 className="text-lg font-bold mb-3 text-primary">2. Staking & Entries</h2>
                     <ul className="space-y-2 text-muted-foreground text-sm">
-                        <li>• You must be 18 years or older to participate</li>
-                        <li>• You must have an active Whop membership or daily entry pass</li>
-                        <li>• One entry per person per contest</li>
-                        <li>• Multiple accounts are not permitted</li>
+                        <li>• connect your <strong className="text-white">Solana Wallet</strong> (Phantom, Solflare, etc.)</li>
+                        <li>• each prediction requires a <strong className="text-white">stake of $5 (in SOL)</strong></li>
+                        <li>• holders of our <strong className="text-primary">Alpha Pass</strong> get unlimited predictions</li>
+                        <li>• one prediction per token launch per wallet</li>
                     </ul>
                 </section>
 
                 <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">3. How to Enter</h2>
+                    <h2 className="text-lg font-bold mb-3 text-primary">3. The Prediction</h2>
                     <ul className="space-y-2 text-muted-foreground text-sm mb-4">
-                        <li>• Sign in to your account</li>
-                        <li>• Navigate to "Today's Contest"</li>
-                        <li>• Use the slider to select a number between 1 and 100</li>
-                        <li>• Submit before the lock time (7:00 PM PT)</li>
+                        <li>• select a value between <strong className="text-white">1x and 100x</strong></li>
+                        <li>• your prediction represents the peak ROI within the first 60 minutes of bonding</li>
+                        <li>• once a prediction is signed on-chain, it cannot be modified</li>
                     </ul>
-                    <p className="text-xs bg-warning/10 text-warning p-3 rounded-lg">
-                        <strong>Important:</strong> Entries cannot be changed once submitted.
+                    <p className="text-xs bg-primary/10 text-primary p-3 rounded-lg border border-primary/20">
+                        <strong>Oracle Power:</strong> Individual predictions are hidden until the 1-hour mark to prevent consensus manipulation.
                     </p>
                 </section>
 
                 <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">4. Determining the Winner</h2>
+                    <h2 className="text-lg font-bold mb-3 text-primary">4. Winning & Payouts</h2>
                     <p className="text-muted-foreground text-sm mb-3">
-                        After entries lock, we calculate the median of all entries:
+                        The oracle settles based on the <strong className="text-white">Median</strong> of all participant entries:
                     </p>
                     <ul className="space-y-2 text-muted-foreground text-sm mb-3">
-                        <li>• All entries are sorted from lowest to highest</li>
-                        <li>• The middle value is the median</li>
-                        <li>• The entry <strong className="text-white">closest to the median</strong> wins</li>
+                        <li>• we identify the participant closest to the actual market outcome</li>
+                        <li>• if multiple participants are tied, the one closest to the aggregate <strong className="text-white">median</strong> wins</li>
+                        <li>• payouts are sent <strong className="text-success">instantly in SOL</strong> to the winner's wallet</li>
                     </ul>
-                </section>
-
-                <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">5. Tie-Breakers</h2>
-                    <ol className="space-y-2 text-muted-foreground text-sm list-decimal pl-5">
-                        <li><strong className="text-white">Under beats over</strong> — if equally distant, entry below median wins</li>
-                        <li><strong className="text-white">Earlier wins</strong> — if still tied, earliest submission wins</li>
-                    </ol>
                 </section>
 
                 {/* PRIZE & FEE BREAKDOWN */}
                 <section className="glass-card neon-border p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-4 text-primary">💰 6. Prize Pool & Fees</h2>
+                    <h2 className="text-lg font-bold mb-4 text-primary">💎 5. Payout Structure</h2>
                     <p className="text-muted-foreground text-sm mb-4">
-                        Full transparency on how the money works:
+                        Everything is settled on the Solana blockchain for 100% transparency.
                     </p>
 
                     <div className="grid md:grid-cols-2 gap-4 mb-4">
                         <div className="bg-muted p-4 rounded-xl">
-                            <h3 className="font-bold text-white text-sm mb-3">Daily Entry — $5</h3>
+                            <h3 className="font-bold text-white text-sm mb-3">Single Stake — $5 SOL</h3>
                             <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Your entry:</span>
-                                    <span className="text-white font-bold">$5</span>
+                                    <span className="text-muted-foreground">Protocol Fee:</span>
+                                    <span className="text-white font-bold">5%</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Daily prize:</span>
-                                    <span className="text-primary font-bold">$1,000</span>
+                                    <span className="text-muted-foreground">To Daily Pot:</span>
+                                    <span className="text-primary font-bold">95%</span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-muted p-4 rounded-xl">
-                            <h3 className="font-bold text-white text-sm mb-3">Monthly Pass — $49/mo</h3>
+                            <h3 className="font-bold text-white text-sm mb-3">Alpha Pass — $49/mo</h3>
                             <div className="space-y-1 text-xs">
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Daily entries:</span>
-                                    <span className="text-white">Included</span>
+                                    <span className="text-muted-foreground">Status:</span>
+                                    <span className="text-success font-bold">Oracle Elite</span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-muted-foreground">Savings vs daily:</span>
-                                    <span className="text-success font-bold">$100+/mo</span>
+                                    <span className="text-muted-foreground">Prediction Fee:</span>
+                                    <span className="text-white font-bold">$0</span>
                                 </div>
                             </div>
                         </div>
@@ -98,41 +90,23 @@ export default function RulesPage() {
 
                     <div className="bg-primary/10 p-4 rounded-lg text-center border border-primary/20">
                         <p className="text-sm text-muted-foreground">
-                            <strong className="text-white">$1,000 prize</strong> paid daily to the winner via Whop
+                            The protocol maintains a <strong className="text-white">Fixed $1,000 Payout</strong> backed by the stake treasury.
                         </p>
                     </div>
                 </section>
 
                 <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">7. Results & Transparency</h2>
-                    <ul className="space-y-2 text-muted-foreground text-sm">
-                        <li>• Winning number published immediately</li>
-                        <li>• Full statistics: median, mean, mode, min, max</li>
-                        <li>• Entry distribution histogram</li>
-                        <li>• Total prize payout</li>
-                    </ul>
-                </section>
-
-                <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">8. Disqualification</h2>
-                    <ul className="space-y-2 text-muted-foreground text-sm">
-                        <li>• Multiple accounts = disqualified</li>
-                        <li>• Any form of cheating = disqualified</li>
-                        <li>• Terms of Service violations = disqualified</li>
-                    </ul>
-                </section>
-
-                <section className="glass-card p-6 rounded-2xl">
-                    <h2 className="text-lg font-bold mb-3 text-primary">9. Contact</h2>
+                    <h2 className="text-lg font-bold mb-3 text-primary">6. Transparency</h2>
                     <p className="text-muted-foreground text-sm">
-                        Questions? Contact us through our Whop page.
+                        All market data is pulled directly from the <strong className="text-white">Solana RPC</strong>.
+                        Bonding curve events and price feeds are verified by the CROWD indexer against pump.fun's public program.
                     </p>
                 </section>
             </div>
 
             <div className="mt-8 p-4 bg-muted rounded-xl text-center">
                 <p className="text-xs text-muted-foreground">
-                    Last updated: January 2026
+                    Oracle Protocol v2.1 (Solana Mainnet) | Last updated: January 2026
                 </p>
             </div>
         </div>

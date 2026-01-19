@@ -1,9 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 
 export default function SliderEntry() {
+    const { connected } = useWallet()
     const [value, setValue] = useState(50)
 
     return (
@@ -12,26 +14,27 @@ export default function SliderEntry() {
             <div className="mb-4">
                 <span className="badge">
                     <span className="badge-dot"></span>
-                    ROUND ACTIVE
+                    ACTIVE ORACLE ROUND
                 </span>
             </div>
 
             {/* Headline */}
             <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
-                MASTER THE<br />
-                <span className="text-primary italic">MEDIAN.</span>
+                PREDICT THE<br />
+                <span className="text-primary italic">NEXT MOON.</span>
             </h1>
 
-            <p className="text-muted-foreground mb-8">
-                Predict where the crowd lands. No algorithms, no luck
-                —just pure social intelligence. The closest entry wins <span className="text-primary font-bold">$1,000</span>.
+            <p className="text-muted-foreground mb-8 text-sm">
+                The crowd is the ultimate alpha. Predict the 1-hour ROI of the next
+                <span className="text-primary font-bold"> pump.fun </span>
+                bonding curve break. Closest win takes the SOL pot.
             </p>
 
             {/* Slider Section */}
             <div className="bg-muted rounded-xl p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-xs text-muted-foreground uppercase tracking-widest">Slide to select guess</span>
-                    <span className="text-5xl font-black text-primary font-mono">{value}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-widest">Predict ROI %</span>
+                    <span className="text-5xl font-black text-primary font-mono">{value}x</span>
                 </div>
 
                 {/* Custom Slider */}
@@ -50,19 +53,26 @@ export default function SliderEntry() {
                 </div>
 
                 <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>1</span>
-                    <span>50</span>
-                    <span>100</span>
+                    <span>1x</span>
+                    <span>50x</span>
+                    <span>100x</span>
                 </div>
             </div>
 
             {/* CTA Button */}
-            <Link href="/today" className="btn btn-primary text-lg w-full justify-center">
-                SUBMIT ENTRY →
-            </Link>
+            {connected ? (
+                <button className="btn btn-primary text-lg w-full justify-center">
+                    STAKE PREDICTION →
+                </button>
+            ) : (
+                <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-4">Connect wallet to stake $5 in SOL</p>
+                    <WalletMultiButton className="!w-full !justify-center !bg-primary !text-background !h-12 !rounded-xl !font-bold" />
+                </div>
+            )}
 
-            <p className="text-xs text-muted-foreground text-center mt-4">
-                Sign in to lock in your number
+            <p className="text-[10px] text-muted-foreground text-center mt-4 uppercase tracking-widest opacity-50">
+                Transparently settled on Solana
             </p>
         </div>
     )
