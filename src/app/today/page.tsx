@@ -72,21 +72,18 @@ export default function TodayPage() {
 
     if (loading || authStatus === 'loading') {
         return (
-            <div className="container">
-                <div className="loading">
-                    <div className="loading-spinner"></div>
-                    Loading today's contest...
-                </div>
+            <div className="container flex items-center justify-center min-h-[50vh]">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
             </div>
         )
     }
 
     if (!contest) {
         return (
-            <div className="container content-narrow">
-                <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
-                    <h2>No Contest Available</h2>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
+            <div className="container max-w-2xl py-20 text-center">
+                <div className="glass-card p-12 rounded-2xl">
+                    <h2 className="text-2xl font-bold mb-2">No Contest Available</h2>
+                    <p className="text-muted-foreground">
                         Today's contest hasn't been created yet. Check back soon!
                     </p>
                 </div>
@@ -94,47 +91,44 @@ export default function TodayPage() {
         )
     }
 
+    const HeaderSection = () => (
+        <div className="text-center mb-12">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-white">TODAY'S CONTEST</h1>
+            <p className="text-lg text-secondary font-medium tracking-wide">{formatDate(contest.contestDate)}</p>
+        </div>
+    )
+
     // Not signed in
     if (!session?.user) {
         return (
-            <div className="container content-narrow">
-                <div className="page-header" style={{ textAlign: 'center' }}>
-                    <h1 className="page-title">Today's Contest</h1>
-                    <p className="page-subtitle">{formatDate(contest.contestDate)}</p>
-                </div>
+            <div className="container max-w-lg py-20">
+                <HeaderSection />
 
-                <div className="card" style={{ marginBottom: '24px' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                        <p style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                            Pick a number from
-                        </p>
-                        <p style={{ fontSize: '2rem', fontWeight: 700 }}>
-                            1 – 100
+                <div className="glass-card p-1 rounded-2xl mb-8">
+                    <div className="bg-background/50 rounded-[14px] p-8">
+                        <div className="text-center mb-8">
+                            <p className="text-muted-foreground mb-2 text-sm uppercase tracking-widest">Pick a number from</p>
+                            <p className="text-5xl font-black text-white">1 – 100</p>
+                        </div>
+
+                        <Countdown
+                            targetDate={contest.locksAt}
+                            onComplete={handleCountdownComplete}
+                        />
+
+                        <p className="text-center text-xs text-muted-foreground mt-4">
+                            Locks at {formatLockTime(new Date(contest.locksAt))}
                         </p>
                     </div>
-
-                    <Countdown
-                        targetDate={contest.locksAt}
-                        onComplete={handleCountdownComplete}
-                    />
-
-                    <p style={{
-                        textAlign: 'center',
-                        color: 'var(--text-muted)',
-                        fontSize: '0.875rem',
-                        marginTop: '8px'
-                    }}>
-                        Locks at {formatLockTime(new Date(contest.locksAt))}
-                    </p>
                 </div>
 
-                <div className="paywall">
-                    <div className="paywall-icon">🔒</div>
-                    <h2 className="paywall-title">Sign In to Play</h2>
-                    <p className="paywall-text">
+                <div className="glass-card p-8 rounded-2xl text-center border-primary/20 bg-primary/5">
+                    <div className="text-3xl mb-4">🔒</div>
+                    <h2 className="text-xl font-bold mb-2">Sign In to Play</h2>
+                    <p className="text-muted-foreground mb-6">
                         Create an account and unlock access to submit your entry.
                     </p>
-                    <Link href="/account" className="btn btn-primary">
+                    <Link href="/account" className="btn btn-primary w-full">
                         Sign In
                     </Link>
                 </div>
@@ -145,32 +139,23 @@ export default function TodayPage() {
     // Already submitted
     if (userEntry) {
         return (
-            <div className="container content-narrow">
-                <div className="page-header" style={{ textAlign: 'center' }}>
-                    <h1 className="page-title">Today's Contest</h1>
-                    <p className="page-subtitle">{formatDate(contest.contestDate)}</p>
-                </div>
+            <div className="container max-w-lg py-20">
+                <HeaderSection />
 
-                <div className="entry-confirmation">
-                    <div className="entry-confirmation-icon">✓</div>
-                    <h2 className="entry-confirmation-title">Entry Submitted!</h2>
-                    <div className="entry-confirmation-number">{userEntry.number}</div>
-                    <p className="entry-confirmation-time">
+                <div className="p-8 bg-success/10 border border-success/20 rounded-2xl text-center mb-8">
+                    <div className="text-4xl mb-4 text-success">✓</div>
+                    <h2 className="text-xl font-bold mb-2 text-white">Entry Submitted!</h2>
+                    <div className="text-6xl font-black text-success my-4">{userEntry.number}</div>
+                    <p className="text-xs text-muted-foreground">
                         Submitted at {new Date(userEntry.createdAt).toLocaleTimeString()}
                     </p>
                 </div>
 
-                <div className="card" style={{ marginTop: '24px' }}>
+                <div className="glass-card p-8 rounded-2xl text-center">
                     {isLocked || contest.status !== 'open' ? (
-                        <div style={{ textAlign: 'center' }}>
-                            <p style={{
-                                color: 'var(--warning)',
-                                fontWeight: 600,
-                                marginBottom: '8px'
-                            }}>
-                                Entries are now locked
-                            </p>
-                            <p style={{ color: 'var(--text-secondary)' }}>
+                        <div>
+                            <p className="text-warning font-bold mb-2">Entries are now locked</p>
+                            <p className="text-muted-foreground mb-6">
                                 {contest.status === 'settled'
                                     ? 'Results have been posted!'
                                     : 'Results will be posted soon.'
@@ -178,8 +163,7 @@ export default function TodayPage() {
                             </p>
                             <Link
                                 href={`/results/${contest.contestDate.split('T')[0]}`}
-                                className="btn btn-secondary"
-                                style={{ marginTop: '16px' }}
+                                className="btn btn-secondary w-full"
                             >
                                 View Results
                             </Link>
@@ -190,12 +174,7 @@ export default function TodayPage() {
                                 targetDate={contest.locksAt}
                                 onComplete={handleCountdownComplete}
                             />
-                            <p style={{
-                                textAlign: 'center',
-                                color: 'var(--text-muted)',
-                                fontSize: '0.875rem',
-                                marginTop: '8px'
-                            }}>
+                            <p className="text-center text-xs text-muted-foreground mt-4">
                                 Entries lock at {formatLockTime(new Date(contest.locksAt))}
                             </p>
                         </>
@@ -208,17 +187,15 @@ export default function TodayPage() {
     // Contest is locked
     if (isLocked || contest.status !== 'open') {
         return (
-            <div className="container content-narrow">
-                <div className="page-header" style={{ textAlign: 'center' }}>
-                    <h1 className="page-title">Today's Contest</h1>
-                    <p className="page-subtitle">{formatDate(contest.contestDate)}</p>
-                </div>
+            <div className="container max-w-lg py-20">
+                <HeaderSection />
 
-                <div className="card" style={{ textAlign: 'center' }}>
-                    <div className="countdown locked">
-                        <span className="countdown-label">Entries Locked</span>
+                <div className="glass-card p-8 rounded-2xl text-center">
+                    <div className="p-4 bg-destructive/10 rounded-xl mb-4 border border-destructive/20">
+                        <span className="text-destructive font-bold uppercase tracking-wider">Entries Locked</span>
                     </div>
-                    <p style={{ color: 'var(--text-secondary)', marginTop: '16px' }}>
+
+                    <p className="text-muted-foreground mb-6">
                         {contest.status === 'settled'
                             ? 'Results have been posted!'
                             : 'You missed today\'s contest. Results will be posted soon.'
@@ -226,8 +203,7 @@ export default function TodayPage() {
                     </p>
                     <Link
                         href={`/results/${contest.contestDate.split('T')[0]}`}
-                        className="btn btn-secondary"
-                        style={{ marginTop: '16px' }}
+                        className="btn btn-secondary w-full"
                     >
                         View Results
                     </Link>
@@ -238,20 +214,13 @@ export default function TodayPage() {
 
     // Ready to submit
     return (
-        <div className="container content-narrow">
-            <div className="page-header" style={{ textAlign: 'center' }}>
-                <h1 className="page-title">Today's Contest</h1>
-                <p className="page-subtitle">{formatDate(contest.contestDate)}</p>
-            </div>
+        <div className="container max-w-lg py-20">
+            <HeaderSection />
 
-            <div className="card">
-                <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-                    <p style={{ color: 'var(--text-secondary)', marginBottom: '8px' }}>
-                        Pick a number from
-                    </p>
-                    <p style={{ fontSize: '2rem', fontWeight: 700 }}>
-                        1 – 100
-                    </p>
+            <div className="glass-card neon-border p-8 rounded-2xl">
+                <div className="text-center mb-8">
+                    <p className="text-muted-foreground mb-2 text-sm uppercase tracking-widest">Pick a number from</p>
+                    <p className="text-5xl font-black text-white">1 – 100</p>
                 </div>
 
                 <Countdown
@@ -259,13 +228,7 @@ export default function TodayPage() {
                     onComplete={handleCountdownComplete}
                 />
 
-                <p style={{
-                    textAlign: 'center',
-                    color: 'var(--text-muted)',
-                    fontSize: '0.875rem',
-                    marginTop: '8px',
-                    marginBottom: '24px'
-                }}>
+                <p className="text-center text-xs text-muted-foreground mt-2 mb-8">
                     Locks at {formatLockTime(new Date(contest.locksAt))}
                 </p>
 
@@ -275,15 +238,7 @@ export default function TodayPage() {
                 />
             </div>
 
-            <div style={{
-                textAlign: 'center',
-                marginTop: '24px',
-                padding: '16px',
-                background: 'var(--bg-secondary)',
-                borderRadius: 'var(--border-radius)',
-                color: 'var(--text-secondary)',
-                fontSize: '0.875rem'
-            }}>
+            <div className="mt-8 p-4 bg-white/5 rounded-xl text-center text-sm text-muted-foreground border border-white/5">
                 💡 Tip: The winning number is the one closest to what everyone else picks.
                 Think about what the median might be!
             </div>

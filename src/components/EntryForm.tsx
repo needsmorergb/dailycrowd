@@ -50,9 +50,9 @@ export default function EntryForm({ contestId, onSuccess, disabled }: EntryFormP
     }
 
     return (
-        <form onSubmit={handleSubmit} className="entry-form">
-            <div className="entry-input-group">
-                <label htmlFor="number" className="entry-label">
+        <form onSubmit={handleSubmit} className="max-w-md mx-auto">
+            <div className="mb-6">
+                <label htmlFor="number" className="block text-sm text-muted-foreground mb-2 text-center uppercase tracking-wider">
                     Your number (1-100)
                 </label>
                 <input
@@ -62,17 +62,17 @@ export default function EntryForm({ contestId, onSuccess, disabled }: EntryFormP
                     max="100"
                     value={number}
                     onChange={(e) => setNumber(e.target.value)}
-                    placeholder="Enter your prediction"
-                    className="entry-input"
+                    placeholder="50"
+                    className="w-full text-center text-4xl font-black bg-background border-2 border-white/10 rounded-xl py-4 focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-white/5"
                     disabled={disabled || loading}
                 />
             </div>
 
-            {error && <p className="entry-error">{error}</p>}
+            {error && <p className="text-destructive text-sm text-center mb-4 bg-destructive/10 p-2 rounded">{error}</p>}
 
             <button
                 type="submit"
-                className="entry-submit"
+                className="w-full py-4 text-lg font-bold text-white bg-primary rounded-xl hover:bg-primary/90 hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100 disabled:cursor-not-allowed transition-all shadow-[0_0_20px_rgba(124,58,237,0.3)]"
                 disabled={disabled || loading || !number}
             >
                 {loading ? 'Submitting...' : 'Submit Entry'}

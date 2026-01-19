@@ -43,29 +43,29 @@ export default function Countdown({ targetDate, onComplete }: CountdownProps) {
 
     if (timeLeft.isLocked) {
         return (
-            <div className="countdown locked">
-                <span className="countdown-label">Entries Locked</span>
+            <div className="p-4 bg-destructive/10 rounded-xl text-center border border-destructive/20">
+                <span className="text-destructive font-bold uppercase tracking-wider text-sm">Entries Locked</span>
             </div>
         )
     }
 
     return (
-        <div className="countdown">
-            <span className="countdown-label">Time remaining</span>
-            <div className="countdown-timer">
-                <div className="countdown-unit">
-                    <span className="countdown-value">{String(timeLeft.hours).padStart(2, '0')}</span>
-                    <span className="countdown-unit-label">hrs</span>
+        <div className="p-6 text-center">
+            <span className="block text-sm text-muted-foreground mb-4 uppercase tracking-widest">Time Remaining</span>
+            <div className="flex justify-center items-center gap-4">
+                <div className="flex flex-col items-center p-3 bg-secondary/10 rounded-lg min-w-[80px]">
+                    <span className="text-4xl font-black font-mono text-secondary">{String(timeLeft.hours).padStart(2, '0')}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase mt-1">Hours</span>
                 </div>
-                <span className="countdown-separator">:</span>
-                <div className="countdown-unit">
-                    <span className="countdown-value">{String(timeLeft.minutes).padStart(2, '0')}</span>
-                    <span className="countdown-unit-label">min</span>
+                <span className="text-2xl text-muted-foreground/30">:</span>
+                <div className="flex flex-col items-center p-3 bg-secondary/10 rounded-lg min-w-[80px]">
+                    <span className="text-4xl font-black font-mono text-secondary">{String(timeLeft.minutes).padStart(2, '0')}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase mt-1">Mins</span>
                 </div>
-                <span className="countdown-separator">:</span>
-                <div className="countdown-unit">
-                    <span className="countdown-value">{String(timeLeft.seconds).padStart(2, '0')}</span>
-                    <span className="countdown-unit-label">sec</span>
+                <span className="text-2xl text-muted-foreground/30">:</span>
+                <div className="flex flex-col items-center p-3 bg-secondary/10 rounded-lg min-w-[80px]">
+                    <span className="text-4xl font-black font-mono text-secondary">{String(timeLeft.seconds).padStart(2, '0')}</span>
+                    <span className="text-[10px] text-muted-foreground uppercase mt-1">Secs</span>
                 </div>
             </div>
         </div>
