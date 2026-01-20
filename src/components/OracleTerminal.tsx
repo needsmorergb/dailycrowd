@@ -308,15 +308,36 @@ export default function OracleTerminal() {
 
                 {/* Footer Ticker */}
                 <div className="fixed bottom-0 left-0 right-0 bg-primary text-white py-3 border-t-4 border-neon-green overflow-hidden flex items-center z-40">
-                    <div className="px-4 border-r border-white/20 mr-4">
+                    <div className="px-4 border-r border-white/20 mr-4 z-50 bg-primary">
                         <span className="text-[10px] font-black uppercase text-neon-green tracking-widest">Recent Activity</span>
                     </div>
-                    <div className="flex gap-12 animate-scroll whitespace-nowrap font-mono text-xs font-bold uppercase tracking-wider opacity-80">
-                        <span>User 892x won <span className="text-neon-green">12.0x ROI</span> (+$4,200)</span>
-                        <span>•</span>
-                        <span>Oracle_King won <span className="text-neon-purple">5.5x ROI</span> (+$890)</span>
-                        <span>•</span>
-                        <span>DegenMaster won <span className="text-neon-green">25.0x ROI</span> (+$12,400)</span>
+                    <div className="flex gap-12 animate-scroll whitespace-nowrap font-mono text-xs font-bold uppercase tracking-wider opacity-80 w-max">
+                        {/* Original Set */}
+                        <div className="flex gap-12">
+                            <span>User 892x won <span className="text-neon-green">12.0x ROI</span> (+$4,200)</span>
+                            <span>•</span>
+                            <span>Oracle_King won <span className="text-neon-purple">5.5x ROI</span> (+$890)</span>
+                            <span>•</span>
+                            <span>DegenMaster won <span className="text-neon-green">25.0x ROI</span> (+$12,400)</span>
+                            <span>•</span>
+                            <span>Satoshi_Nakamoto won <span className="text-neon-green">100.0x ROI</span> (+$50,000)</span>
+                            <span>•</span>
+                            <span>Vitalik_B won <span className="text-neon-purple">2.0x ROI</span> (+$100)</span>
+                            <span>•</span>
+                        </div>
+                        {/* Duplicate Set for Loop */}
+                        <div className="flex gap-12">
+                            <span>User 892x won <span className="text-neon-green">12.0x ROI</span> (+$4,200)</span>
+                            <span>•</span>
+                            <span>Oracle_King won <span className="text-neon-purple">5.5x ROI</span> (+$890)</span>
+                            <span>•</span>
+                            <span>DegenMaster won <span className="text-neon-green">25.0x ROI</span> (+$12,400)</span>
+                            <span>•</span>
+                            <span>Satoshi_Nakamoto won <span className="text-neon-green">100.0x ROI</span> (+$50,000)</span>
+                            <span>•</span>
+                            <span>Vitalik_B won <span className="text-neon-purple">2.0x ROI</span> (+$100)</span>
+                            <span>•</span>
+                        </div>
                     </div>
                 </div>
             </div>
