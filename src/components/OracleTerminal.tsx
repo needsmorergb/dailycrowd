@@ -1,169 +1,267 @@
 'use client';
 
 import { useState } from 'react';
-import SliderEntry from '@/components/SliderEntry';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export default function OracleTerminal() {
     const { connected } = useWallet();
-    const [value, setValue] = useState(2);
+    const [prediction, setPrediction] = useState(15.0);
+    const [stakeAmount, setStakeAmount] = useState('');
 
     return (
-        <div className="w-full max-w-6xl mx-auto">
-            {/* TERMINAL CONTAINER */}
-            <div className="rounded-3xl overflow-hidden border border-white/10 bg-[#0F0F1A] shadow-2xl relative">
-                {/* GLOW EFFECTS */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent opacity-50"></div>
-                <div className="absolute -left-20 top-20 w-64 h-64 bg-primary/5 blur-[100px] rounded-full pointer-events-none"></div>
-
-                {/* 1. HEADER BAR */}
-                <div className="flex flex-col md:flex-row items-center justify-between px-6 py-4 border-b border-white/5 bg-black/20 backdrop-blur-md">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20">
-                            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                            <span className="text-xs font-bold text-primary uppercase tracking-widest">Live Round (Asia)</span>
+        <div className="w-full">
+            {/* Global Timer & Header Section */}
+            <div className="flex flex-col items-center mb-10">
+                <p className="text-primary/60 text-xs font-bold uppercase tracking-[0.3em] mb-4">Oracle Window Closing In</p>
+                <div className="flex gap-4">
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="flex h-20 w-24 items-center justify-center rounded-xl bg-primary border-b-4 border-accent-purple">
+                            <p className="text-white text-4xl font-mono font-bold leading-tight glitch-text">00</p>
                         </div>
-                        <span className="text-xs text-muted-foreground uppercase tracking-widest hidden md:inline-block">Ends in <span className="text-white font-mono">01:55:17</span></span>
+                        <p className="text-primary text-xs font-black uppercase italic">Hours</p>
                     </div>
-                    <div className="flex items-center gap-6 mt-4 md:mt-0">
-                        <div className="text-right">
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Current Pot</div>
-                            <div className="text-lg font-black text-white font-mono">$450.00</div>
+                    <div className="text-4xl font-mono font-bold self-center pb-6">:</div>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="flex h-20 w-24 items-center justify-center rounded-xl bg-primary border-b-4 border-accent-purple">
+                            <p className="text-white text-4xl font-mono font-bold leading-tight glitch-text">14</p>
                         </div>
-                        <div className="w-px h-8 bg-white/10"></div>
-                        <div className="text-right">
-                            <div className="text-[10px] text-muted-foreground uppercase tracking-widest">Weekly Jackpot</div>
-                            <div className="text-lg font-black text-yellow-400 font-mono text-shadow-glow">$52,400</div>
-                        </div>
+                        <p className="text-primary text-xs font-black uppercase italic">Minutes</p>
                     </div>
-                </div>
-
-                {/* 2. MAIN CONTENT GRID */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 min-h-[500px]">
-
-                    {/* LEFT: TARGET INFO (4 Cols) */}
-                    <div className="lg:col-span-4 p-8 border-b lg:border-b-0 lg:border-r border-white/5 bg-gradient-to-b from-transparent to-black/20">
-                        <div className="text-xs text-muted-foreground uppercase tracking-widest mb-6">Target Asset</div>
-
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-32 h-32 bg-gradient-to-br from-gray-800 to-black rounded-3xl border border-white/10 shadow-xl flex items-center justify-center text-6xl mb-6 relative group">
-                                🐸
-                                <div className="absolute inset-0 border-2 border-primary/0 group-hover:border-primary/50 transition-all rounded-3xl"></div>
-                            </div>
-
-                            <h2 className="text-4xl font-black text-white leading-none mb-1">PEPE 3.0</h2>
-                            <span className="text-sm font-mono text-primary mb-6">$PEPE3</span>
-
-                            <div className="grid grid-cols-2 gap-3 w-full">
-                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
-                                    <div className="text-[10px] text-muted-foreground uppercase">Bonding Curve</div>
-                                    <div className="text-white font-mono text-sm">32%</div>
-                                </div>
-                                <div className="bg-white/5 p-3 rounded-lg border border-white/5">
-                                    <div className="text-[10px] text-muted-foreground uppercase">Dev Wallet</div>
-                                    <div className="text-green-400 font-mono text-sm">Active</div>
-                                </div>
-                                <div className="col-span-2 bg-white/5 p-3 rounded-lg border border-white/5 flex justify-between items-center px-4 cursor-pointer hover:bg-white/10 transition-colors">
-                                    <span className="text-[10px] text-muted-foreground uppercase">CA:</span>
-                                    <span className="text-xs font-mono text-muted-foreground">8xP...9jL</span>
-                                    <span>📋</span>
-                                </div>
-                            </div>
+                    <div className="text-4xl font-mono font-bold self-center pb-6">:</div>
+                    <div className="flex flex-col items-center gap-2">
+                        <div className="flex h-20 w-24 items-center justify-center rounded-xl bg-primary border-b-4 border-accent-purple">
+                            <p className="text-white text-4xl font-mono font-bold leading-tight glitch-text">45</p>
                         </div>
+                        <p className="text-primary text-xs font-black uppercase italic">Seconds</p>
                     </div>
-
-                    {/* CENTER: PREDICTION SLIDER (5 Cols) */}
-                    <div className="lg:col-span-5 p-8 flex flex-col justify-center relative">
-                        <div className="text-center mb-8">
-                            <h3 className="text-2xl font-bold text-white mb-2">Predict Peak ROI</h3>
-                            <p className="text-xs text-muted-foreground">Adjust slider to predict the 1H High</p>
-                        </div>
-
-                        {/* SLIDER COMPONENT LOGIC INLINE FOR TIGHTER INTEGRATION */}
-                        <div className="bg-black/40 rounded-2xl p-6 border border-white/5 mb-8">
-                            <div className="flex justify-between items-center mb-10">
-                                <span className="text-5xl font-black text-white font-mono">{value}x</span>
-                                <span className={`text-xs px-2 py-1 rounded uppercase font-bold ${value > 15 ? 'bg-green-500/20 text-green-500' : value === 0 ? 'bg-red-500/20 text-red-500' : 'bg-white/10 text-white'}`}>
-                                    {value === 0 ? 'RUG PULL' : value >= 15 ? 'MOON MISSION' : 'VOLATILE'}
-                                </span>
-                            </div>
-
-                            <div className="relative py-2">
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="30"
-                                    step="0.1"
-                                    value={value}
-                                    onChange={(e) => setValue(parseFloat(e.target.value))}
-                                    className="slider w-full cursor-pointer h-2 bg-gray-800 rounded-lg appearance-none"
-                                    style={{
-                                        background: `linear-gradient(to right, #ef4444 0%, #a3e635 ${Math.min((value / 30) * 100, 100)}%, #374151 ${Math.min((value / 30) * 100, 100)}%, #1f2937 100%)`
-                                    }}
-                                />
-                            </div>
-                            <div className="flex justify-between mt-4 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-                                <span>0x</span>
-                                <span>15x</span>
-                                <span>30x</span>
-                            </div>
-                        </div>
-
-                        {connected ? (
-                            <button className="w-full py-4 text-center rounded-xl bg-primary text-black font-black text-lg uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(163,230,53,0.3)]">
-                                Start Oracle Session
-                            </button>
-                        ) : (
-                            <div className="w-full">
-                                <WalletMultiButton className="!w-full !justify-center !bg-white/10 !border !border-white/10 !h-14 !rounded-xl !font-bold hover:!bg-white/20" />
-                            </div>
-                        )}
-                    </div>
-
-                    {/* RIGHT: LEADERBOARD / STATS (3 Cols) */}
-                    <div className="lg:col-span-3 border-l border-white/5 bg-black/20 p-6 flex flex-col">
-                        <div className="text-xs text-muted-foreground uppercase tracking-widest mb-4">Live Oracle Feed</div>
-
-                        <div className="flex-grow space-y-3 overflow-y-auto max-h-[400px] pr-2 custom-scrollbar">
-                            {[1, 2, 3, 4, 5, 6].map((_, i) => (
-                                <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 to-blue-500 flex items-center justify-center text-[10px]">
-                                        👽
-                                    </div>
-                                    <div className="flex-grow">
-                                        <div className="text-xs font-bold text-white">Whale_{8392 + i}</div>
-                                        <div className="text-[10px] text-muted-foreground">Staked 5,000 $CROWD</div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-xs font-black text-primary">12.5x</div>
-                                        <div className="text-[10px] text-muted-foreground">Prediction</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-4 pt-4 border-t border-white/5 text-center">
-                            <p className="text-[10px] text-muted-foreground">Global Consensus: <span className="text-white font-bold">8.4x</span></p>
-                        </div>
-                    </div>
-
                 </div>
             </div>
 
-            {/* FOOTER STATS */}
-            <div className="grid grid-cols-3 gap-6 mt-8 opacity-60">
-                <div className="text-center">
-                    <div className="text-2xl font-black text-white">4,203</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Active Oracles</div>
+            <div className="grid grid-cols-12 gap-8">
+                {/* Left Column: Token Info */}
+                <div className="col-span-12 lg:col-span-3 space-y-6">
+                    <div className="p-6 rounded-xl border-2 border-primary bg-white shadow-[8px_8px_0px_0px_#141414]">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="px-2 py-1 bg-accent text-primary text-[10px] font-black uppercase tracking-tighter italic">Live Asset</span>
+                            <span className="cursor-pointer hover:text-primary material-symbols-outlined text-primary/40">info</span>
+                        </div>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="size-14 rounded-full bg-primary flex items-center justify-center p-1 border-2 border-primary">
+                                <div className="w-full h-full rounded-full bg-cover bg-center flex items-center justify-center text-3xl">
+                                    🐸
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black italic uppercase leading-none">$PEPE3</h3>
+                                <p className="text-primary/60 text-xs font-mono">0xPepe...3vSol</p>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex flex-col gap-2">
+                                <div className="flex justify-between text-xs font-bold uppercase tracking-tight">
+                                    <span>Bonding Progress</span>
+                                    <span className="text-accent-purple">88%</span>
+                                </div>
+                                <div className="h-4 w-full bg-primary/10 rounded-full overflow-hidden p-1 border border-primary/20">
+                                    <div className="h-full rounded-full bg-gradient-to-r from-accent-purple to-accent shadow-[0_0_10px_rgba(176,38,255,0.5)]" style={{ width: '88%' }}></div>
+                                </div>
+                                <p className="text-[10px] text-primary/40 text-center italic">Migration to Raydium Imminent</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 pt-4 border-t border-primary/10">
+                                <div>
+                                    <p className="text-[10px] font-bold text-primary/40 uppercase">Market Cap</p>
+                                    <p className="text-sm font-mono font-bold">$1.24M</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-primary/40 uppercase">Holders</p>
+                                    <p className="text-sm font-mono font-bold">14,209</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-primary/40 uppercase">Price</p>
+                                    <p className="text-sm font-mono font-bold text-green-600">+$0.0042</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-primary/40 uppercase">Liquidity</p>
+                                    <p className="text-sm font-mono font-bold">$240K</p>
+                                </div>
+                            </div>
+                            <button className="w-full py-3 bg-primary text-white text-xs font-black uppercase italic tracking-widest hover:translate-x-1 hover:-translate-y-1 transition-transform shadow-[4px_4px_0px_0px_#ccff00]">
+                                View On Solscan
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="p-4 rounded-xl border-2 border-primary bg-primary text-white">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] mb-3 text-accent">Live Oracle Feed</h4>
+                        <div className="space-y-3 font-mono text-[11px]">
+                            <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                <span className="text-white/60">G8Xp...m2K</span>
+                                <span className="text-accent">12.5x ROI</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                <span className="text-white/60">Ar4z...L9q</span>
+                                <span className="text-accent-purple">2.1x ROI</span>
+                            </div>
+                            <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                                <span className="text-white/60">2Wnn...o0X</span>
+                                <span className="text-accent">28.0x ROI</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-white/60">FkPq...3mS</span>
+                                <span className="text-accent-purple">5.5x ROI</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="text-center">
-                    <div className="text-2xl font-black text-white">$1.2M</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Volume (24h)</div>
+
+                {/* Center Column: Prediction Zone */}
+                <div className="col-span-12 lg:col-span-6 space-y-8">
+                    <div className="p-8 rounded-2xl border-4 border-primary bg-white relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 -mr-16 -mt-16 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-32 h-32 bg-accent-purple/10 -ml-16 -mb-16 rounded-full blur-3xl"></div>
+
+                        <div className="flex flex-col gap-2 mb-12">
+                            <h1 className="text-5xl font-black tracking-tighter italic uppercase leading-tight">Prediction Zone</h1>
+                            <p className="text-primary/60 font-medium">Forecast the end-of-round ROI for $PEPE3. Hit the target, sweep the pot.</p>
+                        </div>
+
+                        <div className="relative py-12 px-4">
+                            <div className="flex justify-between mb-8">
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-tighter text-primary/40">Minimum</p>
+                                    <p className="text-2xl font-black italic">0X</p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-xs font-black uppercase tracking-widest text-primary bg-accent px-4 py-1 rounded-full border-2 border-primary italic scale-125 inline-block">Your Prediction</p>
+                                    <p className="text-6xl font-black italic mt-4 font-mono leading-none">{prediction.toFixed(1)}<span className="text-2xl">X</span></p>
+                                </div>
+                                <div className="text-center">
+                                    <p className="text-[10px] font-black uppercase tracking-tighter text-primary/40">Maximum</p>
+                                    <p className="text-2xl font-black italic">30X</p>
+                                </div>
+                            </div>
+
+                            <div className="relative w-full h-6 flex items-center group">
+                                <div className="absolute w-full h-3 bg-primary/10 rounded-full border border-primary/20 overflow-hidden">
+                                    <div className="h-full bg-primary" style={{ width: `${(prediction / 30) * 100}%` }}></div>
+                                </div>
+                                <input
+                                    className="absolute w-full h-full bg-transparent appearance-none cursor-pointer z-10 opacity-0"
+                                    max="30"
+                                    min="0"
+                                    step="0.1"
+                                    type="range"
+                                    value={prediction}
+                                    onChange={(e) => setPrediction(parseFloat(e.target.value))}
+                                />
+                                {/* Custom Thumb Position hack since regular styling is hard in pure React */}
+                                <div
+                                    className="absolute h-6 w-6 bg-primary border-4 border-accent rounded-full shadow-[0_0_15px_#ccff00] pointer-events-none transition-all"
+                                    style={{ left: `calc(${(prediction / 30) * 100}% - 12px)` }}
+                                ></div>
+                            </div>
+
+                            <div className="flex justify-between mt-6 px-2">
+                                {[...Array(9)].map((_, i) => (
+                                    <span key={i} className={`w-1 h-3 bg-primary/20 rounded-full ${i === 4 ? 'scale-y-150 bg-primary/40' : ''}`}></span>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex gap-4 mt-8">
+                            <div className="flex-1 p-4 rounded-xl bg-primary text-white border-2 border-primary">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-white/60 mb-1 italic">Win Probability</p>
+                                <p className="text-2xl font-bold font-mono">14.2%</p>
+                            </div>
+                            <div className="flex-1 p-4 rounded-xl border-2 border-primary">
+                                <p className="text-[10px] font-black uppercase tracking-widest text-primary/60 mb-1 italic">Est. Payout</p>
+                                <p className="text-2xl font-bold font-mono text-primary">$4,850</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-4 bg-primary p-4 rounded-xl text-white">
+                        <span className="material-symbols-outlined text-accent">lightbulb</span>
+                        <p className="text-xs font-medium">Tip: Most Oracles are betting between 8x and 12x for this round based on current bonding velocity.</p>
+                    </div>
                 </div>
-                <div className="text-center">
-                    <div className="text-2xl font-black text-white">2.5%</div>
-                    <div className="text-[10px] uppercase tracking-widest text-muted-foreground">Supply Burned</div>
+
+                {/* Right Column: Pot & Stake */}
+                <div className="col-span-12 lg:col-span-3 space-y-6">
+                    <div className="p-6 rounded-xl border-2 border-primary bg-white shadow-[8px_8px_0px_0px_#141414]">
+                        <p className="text-xs font-black uppercase tracking-widest text-primary/40 mb-2 italic">Current Pot Size</p>
+                        <div className="mb-8">
+                            <h2 className="text-6xl font-black italic glitch-text leading-tight">$1,500</h2>
+                            <p className="text-primary/60 text-xs font-mono">≈ 10.51 SOL</p>
+                        </div>
+
+                        <div className="mb-6">
+                            <div className="flex rounded-lg border-2 border-primary p-1 bg-primary/5 mb-4">
+                                <button className="flex-1 py-2 text-xs font-black uppercase italic rounded bg-primary text-white">SOL</button>
+                                <button className="flex-1 py-2 text-xs font-black uppercase italic rounded text-primary hover:bg-primary/10 transition-colors">$CROWD</button>
+                            </div>
+
+                            <div className="relative mb-4">
+                                <input
+                                    className="w-full h-14 bg-white border-2 border-primary rounded-xl px-4 text-xl font-bold font-mono focus:ring-0 focus:border-accent-purple outline-none"
+                                    placeholder="0.00"
+                                    type="number"
+                                    value={stakeAmount}
+                                    onChange={(e) => setStakeAmount(e.target.value)}
+                                />
+                                <button className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-black uppercase text-accent-purple hover:underline italic">Max</button>
+                            </div>
+
+                            <div className="grid grid-cols-4 gap-2 mb-6">
+                                {['0.1', '0.5', '1.0', '5.0'].map((amt) => (
+                                    <button
+                                        key={amt}
+                                        onClick={() => setStakeAmount(amt)}
+                                        className="py-2 text-[10px] font-black border border-primary/20 rounded hover:bg-primary hover:text-white transition-colors"
+                                    >
+                                        {amt}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {connected ? (
+                                <button className="w-full py-4 bg-accent text-primary border-4 border-primary rounded-xl text-lg font-black uppercase italic tracking-widest hover:shadow-[0_0_20px_rgba(204,255,0,0.5)] transition-all group active:scale-95">
+                                    Lock Prediction
+                                    <span className="align-middle ml-2 group-hover:translate-x-1 transition-transform inline-block">🚀</span>
+                                </button>
+                            ) : (
+                                <div className="w-full">
+                                    <WalletMultiButton className="!w-full !justify-center !bg-primary !text-white !h-14 !rounded-xl !font-black !uppercase !italic !tracking-widest hover:!bg-primary/90" />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-primary/60">Oracle Fee (2%)</span>
+                                <span className="font-mono font-bold">0.002 SOL</span>
+                            </div>
+                            <div className="flex justify-between items-center text-xs">
+                                <span className="text-primary/60">Platform Boost</span>
+                                <span className="text-accent-purple font-mono font-bold">+0.5x Bonus</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Footer Ticker */}
+            <div className="mt-16 border-t-2 border-primary pt-8 pb-8">
+                <div className="flex items-center gap-6 overflow-hidden whitespace-nowrap">
+                    <p className="text-[10px] font-black uppercase italic bg-primary text-accent px-3 py-1">Recent Hits</p>
+                    <div className="flex gap-12 font-mono text-[11px] font-bold uppercase tracking-widest animate-pulse">
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> User 892x hit 12.0x ROI (+$4,200)</span>
+                        <span className="flex items-center gap-2 text-primary/40">●</span>
+                        <span className="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span> Oracle_King hit 5.5x ROI (+$890)</span>
+                        <span className="flex items-center gap-2 text-primary/40">●</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> DegenMaster hit 25.0x ROI (+$12,400)</span>
+                    </div>
                 </div>
             </div>
         </div>
