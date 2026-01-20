@@ -30,7 +30,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="light">
-      <body className={`${jakarta.variable} ${spaceMono.variable} font-display min-h-screen bg-background text-foreground antialiased selection:bg-accent selection:text-primary`}>
+      <body className={`${jakarta.variable} ${spaceMono.variable} font-display min-h-screen bg-background-light text-primary antialiased selection:bg-neon-green selection:text-primary`}>
         <Providers>
           <div className="relative min-h-screen flex flex-col grid-bg">
             <Header />
