@@ -17,8 +17,8 @@ export default {
                 "neon-purple": "#b026ff",
             },
             fontFamily: {
-                "display": ["Plus Jakarta Sans", "sans-serif"],
-                "mono": ["Space Mono", "monospace"],
+                "display": ["var(--font-jakarta)", "sans-serif"],
+                "mono": ["var(--font-space-mono)", "monospace"],
             },
             borderRadius: {
                 "DEFAULT": "0.25rem",
