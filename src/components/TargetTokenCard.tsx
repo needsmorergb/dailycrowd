@@ -20,8 +20,12 @@ export default function TargetTokenCard() {
                 {/* Token Info */}
                 <div className="flex-grow text-center md:text-left">
                     <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Target of the Day</span>
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+                            <span className="text-primary mr-2">●</span>
+                            Round 2 of 3 (Asia)
+                        </span>
+                        <div className="w-px h-3 bg-white/20 mx-2"></div>
+                        <span className="text-xs font-bold text-white uppercase tracking-widest">Target of the Round</span>
                     </div>
 
                     <h2 className="text-3xl font-black text-white mb-1">PEPE 3.0 <span className="text-lg text-muted-foreground font-normal ml-2">$PEPE3</span></h2>
