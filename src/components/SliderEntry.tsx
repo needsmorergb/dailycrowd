@@ -6,7 +6,7 @@ import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 
 export default function SliderEntry() {
     const { connected } = useWallet()
-    const [value, setValue] = useState(50)
+    const [value, setValue] = useState(2)
 
     return (
         <div className="glass-card neon-border rounded-2xl p-8">
