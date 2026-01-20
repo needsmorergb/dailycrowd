@@ -11,34 +11,7 @@ export default function OracleTerminal() {
 
     return (
         <div className="bg-background-light text-primary min-h-screen font-display selection:bg-neon-green selection:text-primary">
-            {/* Custom Styles for Slider & Grid */}
-            <style jsx global>{`
-        .grid-bg {
-          background-image: radial-gradient(#141414 1px, transparent 1px);
-          background-size: 20px 20px;
-        }
-        .glitch-text {
-          text-shadow: 2px 0 #ccff00, -2px 0 #b026ff;
-        }
-        input[type=range]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          height: 24px;
-          width: 24px;
-          border-radius: 50%;
-          background: #141414;
-          cursor: pointer;
-          border: 4px solid #ccff00;
-          box-shadow: 0 0 15px #ccff00;
-        }
-        /* Hide scrollbar for ticker */
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+
 
             <div className="relative min-h-screen w-full flex flex-col grid-bg bg-opacity-5 pb-20">
 
