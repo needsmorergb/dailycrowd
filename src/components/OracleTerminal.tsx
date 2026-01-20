@@ -1,13 +1,84 @@
 'use client';
 
-import React, { useState } from "react";
+import { NextPage } from "next";
+import React, { useState, useEffect } from "react";
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { format, toZonedTime } from 'date-fns-tz';
+import { differenceInSeconds, addMinutes, startOfHour, setHours, setMinutes, setSeconds, isBefore } from 'date-fns';
+
+const ANCHOR_HOUR = 17; // 5 PM
+const TIMEZONE = 'America/Los_Angeles';
 
 export default function OracleTerminal() {
     const { connected } = useWallet();
     const [prediction, setPrediction] = useState<number>(15.0);
     const [stakeAmount, setStakeAmount] = useState<string>('');
+    const [timeLeft, setTimeLeft] = useState<{ hours: string, minutes: string, seconds: string }>({ hours: '00', minutes: '00', seconds: '00' });
+    const [nextRoundTime, setNextRoundTime] = useState<Date | null>(null);
+
+    // Economic Simulation State
+    const [potSol, setPotSol] = useState<number>(10.51);
+    const [pumpInjection, setPumpInjection] = useState<number>(0.5);
+    const [burnedTokens, setBurnedTokens] = useState<number>(1250);
+
+    // Simulate Pot Growth
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (Math.random() > 0.9) {
+                setPotSol(prev => prev + 0.024);
+                setBurnedTokens(prev => prev + 15);
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    useEffect(() => {
+        const calculateTimeLeft = () => {
+            const now = new Date();
+            const zonedNow = toZonedTime(now, TIMEZONE);
+
+            // Set Anchor Time: Today at 5:00 PM PST
+            let anchorTime = setSeconds(setMinutes(setHours(toZonedTime(new Date(), TIMEZONE), ANCHOR_HOUR), 0), 0);
+
+            // If we are BEFORE 5 PM, count down to 5 PM
+            if (isBefore(zonedNow, anchorTime)) {
+                // anchorTime is correct
+            } else {
+                // If we are AFTER 5 PM, round up to the next 30-minute interval
+                // e.g. 5:12 -> 5:30. 5:45 -> 6:00.
+                const minutes = zonedNow.getMinutes();
+                const nextInterval = minutes < 30 ? 30 : 60;
+                anchorTime = setSeconds(setMinutes(startOfHour(zonedNow), nextInterval), 0);
+            }
+
+            setNextRoundTime(anchorTime);
+
+            const diff = differenceInSeconds(anchorTime, zonedNow);
+
+            if (diff <= 0) {
+                setPotSol(1.0);
+                setPumpInjection(0);
+                return { hours: '00', minutes: '00', seconds: '00' };
+            }
+
+            const h = Math.floor(diff / 3600);
+            const m = Math.floor((diff % 3600) / 60);
+            const s = Math.floor(diff % 60);
+
+            return {
+                hours: h.toString().padStart(2, '0'),
+                minutes: m.toString().padStart(2, '0'),
+                seconds: s.toString().padStart(2, '0')
+            };
+        };
+
+        const timer = setInterval(() => {
+            setTimeLeft(calculateTimeLeft());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     return (
         <div className="bg-background-light text-primary min-h-screen font-display selection:bg-neon-green selection:text-primary">
@@ -71,7 +142,7 @@ export default function OracleTerminal() {
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-28 h-32 bg-primary rounded-xl flex items-center justify-center border-4 border-primary shadow-[8px_8px_0px_0px_#b026ff] relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-white/5 skew-y-12 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
-                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">00</span>
+                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">{timeLeft.hours}</span>
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest text-primary/60">Hours</span>
                             </div>
@@ -81,7 +152,7 @@ export default function OracleTerminal() {
                             {/* Minutes */}
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-28 h-32 bg-primary rounded-xl flex items-center justify-center border-4 border-primary shadow-[8px_8px_0px_0px_#b026ff] relative overflow-hidden">
-                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">14</span>
+                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">{timeLeft.minutes}</span>
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest text-primary/60">Minutes</span>
                             </div>
@@ -91,7 +162,7 @@ export default function OracleTerminal() {
                             {/* Seconds */}
                             <div className="flex flex-col items-center gap-2">
                                 <div className="w-28 h-32 bg-primary rounded-xl flex items-center justify-center border-4 border-primary shadow-[8px_8px_0px_0px_#b026ff] relative overflow-hidden">
-                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">45</span>
+                                    <span className="text-7xl font-mono font-bold text-white tracking-tighter">{timeLeft.seconds}</span>
                                 </div>
                                 <span className="text-xs font-black uppercase tracking-widest text-primary/60">Seconds</span>
                             </div>
@@ -249,8 +320,11 @@ export default function OracleTerminal() {
                             <div className="bg-white border-4 border-primary rounded-2xl p-6 shadow-[8px_8px_0px_0px_#141414]">
                                 <div className="text-center mb-6">
                                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/40 mb-2">Current Pot</p>
-                                    <h3 className="text-5xl font-black italic glitch-text">$1,500</h3>
-                                    <p className="font-mono text-xs font-bold text-neon-purple mt-1">10.51 SOL</p>
+                                    <h3 className="text-5xl font-black italic glitch-text">${(potSol * 145).toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
+                                    <p className="font-mono text-xs font-bold text-neon-purple mt-1 flex items-center justify-center gap-1">
+                                        {potSol.toFixed(2)} SOL
+                                        <span className="bg-neon-green text-primary px-1 rounded text-[10px] ml-1 animate-pulse">+{pumpInjection} SOL (Pump)</span>
+                                    </p>
                                 </div>
 
                                 {/* Input Area */}
@@ -285,9 +359,15 @@ export default function OracleTerminal() {
                                     <span className="material-symbols-outlined align-middle text-sm absolute right-12 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">lock</span>
                                 </button>
 
-                                <p className="text-center text-[10px] font-bold text-primary/40 mt-4">
-                                    2% Oracle Fee • 5% Burned
-                                </p>
+                                <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-dashed border-primary/20">
+                                    <p className="text-[10px] font-bold text-primary/40">
+                                        Fee: 10% • RevShare: 5%
+                                    </p>
+                                    <p className="text-[10px] font-bold text-orange-500 flex items-center gap-1">
+                                        <span className="material-symbols-outlined text-[10px]">local_fire_department</span>
+                                        {burnedTokens.toLocaleString()} CROWD Burned
+                                    </p>
+                                </div>
                             </div>
 
                             {/* Degen Status */}
