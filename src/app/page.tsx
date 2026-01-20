@@ -145,46 +145,67 @@ export default async function LandingPage() {
           </div>
         )}
 
-        {/* Pricing Section */}
+        {/* Staking & Alpha Section */}
         <div className="mb-12">
           <div className="section-title">Stake Your Alpha</div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Daily Pass */}
-            <div className="glass-card rounded-2xl p-6 text-center">
-              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Oracle Stake</div>
-              <div className="text-5xl font-black mb-2">$5</div>
-              <div className="text-xs text-muted-foreground mb-6">equivalent in SOL per entry</div>
-              <ul className="text-left space-y-3 mb-6 text-sm text-muted-foreground">
-                <li>✓ 1 Prediction today</li>
-                <li>✓ Direct SOL payout if closest</li>
-                <li>✓ Immutable on-chain record</li>
+            <div className="glass-card rounded-2xl p-6 text-center flex flex-col h-full">
+              <div className="text-xs uppercase tracking-widest text-muted-foreground mb-4">Single Entry</div>
+              <div className="text-4xl font-black mb-2 text-white">100 $CROWD</div>
+              <div className="text-xs text-muted-foreground mb-6">approx $5 USD</div>
+              <ul className="text-left space-y-3 mb-8 text-sm text-muted-foreground flex-grow">
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">✓</span> <span>1 Prediction for today's draw</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">✓</span> <span>5% Burn (Deflationary)</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">✓</span> <span>Win the POT in instant SOL</span>
+                </li>
               </ul>
-              <button className="btn btn-secondary w-full">Stake SOL</button>
+              <button className="btn btn-secondary w-full mt-auto">Burn to Enter</button>
             </div>
 
-            {/* Monthly Sub */}
-            <div className="glass-card neon-border rounded-2xl p-6 text-center relative">
+            {/* Alpha Staker */}
+            <div className="glass-card neon-border rounded-2xl p-6 text-center relative flex flex-col h-full">
               <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase">Alpha Pass</span>
+                <span className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full uppercase">Become the House</span>
               </div>
-              <div className="text-xs uppercase tracking-widest text-primary mb-4">Unlimited Access</div>
-              <div className="text-5xl font-black mb-2">$49</div>
-              <div className="text-xs text-muted-foreground mb-6">/ month</div>
-              <ul className="text-left space-y-3 mb-6 text-sm">
-                <li className="text-white">✓ Unlimited daily predictions</li>
-                <li className="text-white">✓ Early access to alpha data</li>
-                <li className="text-white">✓ Exclusive "Oracle" role</li>
+              <div className="text-xs uppercase tracking-widest text-primary mb-4">Alpha Staker</div>
+              <div className="text-4xl font-black mb-2 text-white">5,000 $CROWD</div>
+              <div className="text-xs text-muted-foreground mb-6">Locked Staking</div>
+              <ul className="text-left space-y-3 mb-8 text-sm flex-grow">
+                <li className="flex items-start gap-2 text-white">
+                  <span className="text-primary">★</span> <span><strong className="text-primary">0 Fees</strong> on all daily predictions</span>
+                </li>
+                <li className="flex items-start gap-2 text-white">
+                  <span className="text-primary">★</span> <span>Earn <strong className="text-primary">Yield</strong> from global entry fees</span>
+                </li>
+                <li className="flex items-start gap-2 text-white">
+                  <span className="text-primary">★</span> <span>See Oracle Sentiment Data 1h early</span>
+                </li>
               </ul>
-              <button className="btn btn-primary w-full">Join Alpha</button>
+              <button className="btn btn-primary w-full mt-auto">Stake for Alpha</button>
             </div>
           </div>
         </div>
 
-        {/* Trust Footer */}
+        {/* Tokenomics Footer */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-muted text-muted-foreground text-sm">
-            <span>🛡️</span>
-            <span className="font-mono">SETTLED ON SOLANA</span>
+          <div className="inline-flex items-center gap-4 px-6 py-3 rounded-2xl bg-muted/50 text-sm border border-white/5">
+            <div className="flex flex-col md:flex-row items-center gap-2 md:gap-6">
+              <span className="flex items-center gap-2">
+                <span className="text-lg">🔥</span>
+                <span className="text-muted-foreground">Burn Rate: <span className="text-white font-mono">2.5%</span></span>
+              </span>
+              <div className="hidden md:block w-px h-4 bg-white/10"></div>
+              <span className="flex items-center gap-2">
+                <span className="text-lg">💰</span>
+                <span className="text-muted-foreground">Staking Yield: <span className="text-primary font-mono">2.5%</span></span>
+              </span>
+            </div>
           </div>
         </div>
 
