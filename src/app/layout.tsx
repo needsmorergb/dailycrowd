@@ -38,7 +38,7 @@ export default function RootLayout({
         <Providers>
           <div className="relative flex min-h-screen w-full flex-col grid-bg bg-opacity-5">
             <Header />
-            <main>
+            <main className="flex-1 w-full bg-transparent flex flex-col">
               {children}
             </main>
             <Footer />
