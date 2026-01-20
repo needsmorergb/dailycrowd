@@ -1,41 +1,42 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 
 export default function Header() {
-    const { publicKey } = useWallet();
-
     return (
-        <header className="sticky top-0 z-50 bg-background/80 backdrop-blur border-b border-muted">
-            <div className="container max-w-6xl flex items-center justify-between py-4">
+        <header className="sticky top-0 z-50 w-full border-b-2 border-primary bg-white/90 backdrop-blur-md px-6 py-4">
+            <div className="mx-auto flex max-w-[1600px] items-center justify-between">
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                        <span className="text-primary-foreground font-bold text-sm">C</span>
+                <div className="flex items-center gap-4 text-primary">
+                    <div className="size-10 bg-primary text-neon-green flex items-center justify-center rounded-lg border-2 border-primary shadow-[4px_4px_0px_0px_rgba(204,255,0,0.5)]">
+                        <span className="material-symbols-outlined text-2xl font-black">query_stats</span>
                     </div>
-                    <div>
-                        <span className="font-bold text-lg block leading-none">CROWD</span>
-                        <span className="text-[10px] text-primary font-bold tracking-widest uppercase">Oracle</span>
-                    </div>
-                </Link>
+                    <h2 className="text-xl font-black leading-tight tracking-tighter uppercase italic">
+                        CROWD <span className="text-primary/40 not-italic">|</span> Oracle
+                    </h2>
+                </div>
 
-                {/* Navigation */}
-                <nav className="flex items-center gap-6">
-                    <Link href="/rules" className="text-sm text-muted-foreground hover:text-primary transition-colors hidden sm:block">
-                        Rules
-                    </Link>
-                    <Link href="/results" className="text-sm text-muted-foreground hover:text-primary transition-colors hidden sm:block">
-                        Results
-                    </Link>
+                {/* Nav & Wallet */}
+                <div className="flex items-center gap-8">
+                    <nav className="hidden md:flex items-center gap-8">
+                        {['Terminal', 'Hall of Fame', 'Rules'].map((item) => (
+                            <a key={item} href="#" className="text-sm font-bold uppercase tracking-wider hover:text-neon-purple hover:underline decoration-2 underline-offset-4 transition-all">
+                                {item}
+                            </a>
+                        ))}
+                    </nav>
 
-                    {/* Solana Wallet Button */}
                     <div className="flex items-center gap-4">
-                        <WalletMultiButton className="!bg-primary !text-primary-foreground !h-10 !px-6 !rounded-xl !text-sm !font-bold transition-all hover:!scale-105" />
+                        {/* SOL Price Ticker */}
+                        <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                            <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse"></span>
+                            <span className="text-xs font-mono font-bold">$SOL: $142.65</span>
+                        </div>
+
+                        <WalletMultiButton className="!bg-primary !text-white !font-bold !uppercase !tracking-widest !rounded-lg !h-10 !px-6 hover:!bg-primary/90 hover:!translate-x-0.5 hover:!translate-y-0.5 hover:!shadow-none transition-all shadow-[4px_4px_0px_0px_#ccff00] border-2 border-primary" />
                     </div>
-                </nav>
+                </div>
             </div>
         </header>
-    );
+    )
 }
