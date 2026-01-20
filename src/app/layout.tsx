@@ -1,26 +1,18 @@
 import type { Metadata } from 'next'
-import { Plus_Jakarta_Sans, Space_Mono } from 'next/font/google'
+import { JetBrains_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
-import Footer from '@/components/Footer'
 import Providers from '@/components/Providers'
 
-const jakarta = Plus_Jakarta_Sans({
+const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
-  variable: '--font-jakarta',
-  display: 'swap',
-})
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  variable: '--font-space-mono',
-  weight: ['400', '700'],
+  variable: '--font-jetbrains',
   display: 'swap',
 })
 
 export const metadata: Metadata = {
-  title: 'CROWD | The Memecoin Oracle',
-  description: 'Predict ROI. Win SOL. The first specialized prediction market for pump.fun bonding curves.',
+  title: 'CROWD Oracle React Component Design',
+  description: 'Predict ROI. Win SOL.',
 }
 
 export default function RootLayout({
@@ -29,16 +21,18 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="light">
+    <html lang="en" className="dark">
       <head>
-        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
       </head>
-      <body className={`${jakarta.variable} ${spaceMono.variable} bg-background-light dark:bg-background-dark font-display text-primary min-h-screen antialiased`}>
+      <body className={`${jetbrains.variable} font-mono bg-[#0A0A0A] text-white overflow-x-hidden selection:bg-acid-green selection:text-black`}>
         <Providers>
-          <div className="relative flex min-h-screen w-full flex-col grid-bg bg-opacity-5">
+          {/* Scanlines Effect */}
+          <div className="fixed inset-0 z-50 pointer-events-none scanlines"></div>
+
+          <div className="relative min-h-screen flex flex-col bg-[#0A0A0A] bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]">
             <Header />
-            <main className="flex-1 w-full bg-transparent flex flex-col">
+            <main className="flex-1 max-w-[1800px] mx-auto w-full">
               {children}
             </main>
           </div>
