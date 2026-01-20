@@ -33,7 +33,7 @@ export default function SliderEntry() {
             {/* Slider Section */}
             <div className="bg-muted rounded-xl p-6 mb-6">
                 <div className="flex justify-between items-center mb-4">
-                    <span className="text-xs text-muted-foreground uppercase tracking-widest">Predict ROI %</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-widest">Predict Peak ROI</span>
                     <span className="text-5xl font-black text-primary font-mono">{value}x</span>
                 </div>
 
@@ -41,21 +41,22 @@ export default function SliderEntry() {
                 <div className="relative py-4">
                     <input
                         type="range"
-                        min="1"
-                        max="100"
+                        min="0"
+                        max="30"
+                        step="0.1"
                         value={value}
-                        onChange={(e) => setValue(parseInt(e.target.value))}
+                        onChange={(e) => setValue(parseFloat(e.target.value))}
                         className="slider w-full cursor-pointer"
                         style={{
-                            background: `linear-gradient(to right, #c8ff00 0%, #c8ff00 ${value}%, #1f2937 ${value}%, #1f2937 100%)`
+                            background: `linear-gradient(to right, #ff4d4d 0%, #ff4d4d ${Math.min((value / 30) * 100, 10)}%, #c8ff00 ${Math.min((value / 30) * 100, 100)}%, #1f2937 ${Math.min((value / 30) * 100, 100)}%, #1f2937 100%)`
                         }}
                     />
                 </div>
 
-                <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>1x</span>
-                    <span>50x</span>
-                    <span>100x</span>
+                <div className="flex justify-between text-[10px] text-muted-foreground font-mono uppercase tracking-widest">
+                    <span className="text-red-500">0x (RUG)</span>
+                    <span className="text-white">15x (RAYDIUM)</span>
+                    <span className="text-primary">30x (MOON)</span>
                 </div>
             </div>
 
