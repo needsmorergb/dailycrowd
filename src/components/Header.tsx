@@ -1,42 +1,36 @@
-'use client'
+'use client';
 
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export default function Header() {
     return (
-        <header className="sticky top-0 z-50 w-full border-b-2 border-primary bg-white/90 backdrop-blur-md px-6 py-4">
-            <div className="mx-auto flex max-w-[1600px] items-center justify-between">
-                {/* Logo */}
-                <div className="flex items-center gap-4 text-primary">
-                    <div className="size-10 bg-primary text-neon-green flex items-center justify-center rounded-lg border-2 border-primary shadow-[4px_4px_0px_0px_rgba(204,255,0,0.5)]">
-                        <span className="material-symbols-outlined text-2xl font-black">query_stats</span>
-                    </div>
-                    <h2 className="text-xl font-black leading-tight tracking-tighter uppercase italic">
-                        CROWD <span className="text-primary/40 not-italic">|</span> Oracle
-                    </h2>
+        <header className="flex items-center justify-between whitespace-nowrap border-b-2 border-solid border-primary px-10 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50">
+            <div className="flex items-center gap-4 text-primary">
+                <div className="size-8 bg-primary text-neon-green flex items-center justify-center rounded-lg">
+                    <span className="material-symbols-outlined text-2xl">query_stats</span>
                 </div>
-
-                {/* Nav & Wallet */}
-                <div className="flex items-center gap-8">
-                    <nav className="hidden md:flex items-center gap-8">
-                        {['Terminal', 'Hall of Fame', 'Rules'].map((item) => (
-                            <a key={item} href="#" className="text-sm font-bold uppercase tracking-wider hover:text-neon-purple hover:underline decoration-2 underline-offset-4 transition-all">
-                                {item}
-                            </a>
-                        ))}
-                    </nav>
-
-                    <div className="flex items-center gap-4">
-                        {/* SOL Price Ticker */}
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
-                            <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse"></span>
-                            <span className="text-xs font-mono font-bold">$SOL: $142.65</span>
-                        </div>
-
-                        <WalletMultiButton className="!bg-primary !text-white !font-bold !uppercase !tracking-widest !rounded-lg !h-10 !px-6 hover:!bg-primary/90 hover:!translate-x-0.5 hover:!translate-y-0.5 hover:!shadow-none transition-all shadow-[4px_4px_0px_0px_#ccff00] border-2 border-primary" />
+                <h2 className="text-primary text-xl font-black leading-tight tracking-tighter uppercase italic">CROWD Oracle</h2>
+            </div>
+            <div className="flex flex-1 justify-end gap-8 items-center">
+                <div className="flex items-center gap-9">
+                    <a className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors" href="#">Terminal</a>
+                    <a className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors" href="#">Hall of Fame</a>
+                    <a className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors" href="#">Whitepaper</a>
+                </div>
+                <div className="flex gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-lg border border-primary/10">
+                        <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse"></span>
+                        <span className="text-xs font-mono font-bold">$SOL: $142.65</span>
+                    </div>
+                    {/* Wallet Button Wrapper to match style */}
+                    <div className="flex min-w-[140px] cursor-pointer items-center justify-center rounded-lg h-10 bg-primary text-white text-sm font-bold leading-normal tracking-widest uppercase hover:bg-neon-green hover:text-primary transition-all duration-300 border-2 border-primary group">
+                        <span className="truncate w-full h-full flex items-center justify-center">
+                            <WalletMultiButton className="!bg-transparent !text-inherit !h-full !w-full !px-4 !py-0 !m-0 !text-sm !font-bold !uppercase !tracking-widest !rounded-none hover:!bg-transparent shadow-none" />
+                        </span>
                     </div>
                 </div>
             </div>
         </header>
-    )
+    );
 }

@@ -30,11 +30,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="light">
-      <body className={`${jakarta.variable} ${spaceMono.variable} font-display min-h-screen bg-background-light text-primary antialiased selection:bg-neon-green selection:text-primary`}>
+      <head>
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+      </head>
+      <body className={`${jakarta.variable} ${spaceMono.variable} bg-background-light dark:bg-background-dark font-display text-primary min-h-screen antialiased`}>
         <Providers>
-          <div className="relative min-h-screen flex flex-col grid-bg">
+          <div className="relative flex min-h-screen w-full flex-col grid-bg bg-opacity-5">
             <Header />
-            <main className="flex-grow container max-w-[1600px] mx-auto px-4 md:px-10 py-8">
+            <main>
               {children}
             </main>
             <Footer />

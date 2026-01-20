@@ -2,47 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 97%;
-    /* #f7f7f7 */
-    --foreground: 0 0% 8%;
-    /* #141414 */
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
-    --primary: 0 0% 8%;
-    /* #141414 */
-    --primary-foreground: 82 100% 50%;
-    /* #ccff00 */
-    --secondary: 0 0% 97%;
-    --secondary-foreground: 0 0% 8%;
-    --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 82 100% 50%;
-    /* #ccff00 */
-    --accent-foreground: 0 0% 8%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 8%;
-    --input: 0 0% 8%;
-    --ring: 82 100% 50%;
-    --radius: 0.5rem;
-
-    /* Custom Neo-Brutalist Variables */
-    --neon-green: #ccff00;
-    --neon-purple: #b026ff;
-  }
-
-  .dark {
-    /* Even in dark mode, keep the high contrast structure, just inverted background if needed */
-    --background: 0 0% 10%;
-    --foreground: 0 0% 98%;
-    /* ... keep light mode structure preferred for now as per design */
-  }
-}
-
 @layer utilities {
   .grid-bg {
     background-image: radial-gradient(#141414 1px, transparent 1px);
@@ -57,7 +16,6 @@
     box-shadow: 0 0 10px rgba(204, 255, 0, 0.3);
   }
 
-  /* Custom Slider Styles */
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
     height: 24px;
@@ -67,25 +25,5 @@
     cursor: pointer;
     border: 4px solid #ccff00;
     box-shadow: 0 0 15px #ccff00;
-    margin-top: -6px;
-    /* Align thumb to center of track */
-  }
-
-  input[type=range]::-moz-range-thumb {
-    height: 24px;
-    width: 24px;
-    border-radius: 50%;
-    background: #141414;
-    cursor: pointer;
-    border: 4px solid #ccff00;
-    box-shadow: 0 0 15px #ccff00;
-  }
-
-  input[type=range]::-webkit-slider-runnable-track {
-    width: 100%;
-    height: 12px;
-    cursor: pointer;
-    background: transparent;
-    border-radius: 999px;
   }
 }
