@@ -13,6 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 8%;
     --primary: 0 0% 8%;
+    /* #141414 */
     --primary-foreground: 82 100% 50%;
     /* #ccff00 */
     --secondary: 0 0% 97%;
@@ -20,6 +21,7 @@
     --muted: 0 0% 94%;
     --muted-foreground: 0 0% 40%;
     --accent: 82 100% 50%;
+    /* #ccff00 */
     --accent-foreground: 0 0% 8%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
@@ -27,29 +29,17 @@
     --input: 0 0% 8%;
     --ring: 82 100% 50%;
     --radius: 0.5rem;
+
+    /* Custom Neo-Brutalist Variables */
+    --neon-green: #ccff00;
+    --neon-purple: #b026ff;
   }
 
   .dark {
+    /* Even in dark mode, keep the high contrast structure, just inverted background if needed */
     --background: 0 0% 10%;
-    /* #191919 */
     --foreground: 0 0% 98%;
-    --card: 0 0% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 82 100% 50%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
+    /* ... keep light mode structure preferred for now as per design */
   }
 }
 

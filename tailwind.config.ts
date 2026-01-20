@@ -32,6 +32,9 @@ export default {
                     foreground: "#141414",
                     purple: "#b026ff",
                 },
+                "neon-green": "#ccff00",
+                "neon-purple": "#b026ff",
+                "background-light": "#f7f7f7",
                 card: {
                     DEFAULT: "#ffffff",
                     foreground: "#141414",
@@ -53,6 +56,10 @@ export default {
             },
             backgroundImage: {
                 'grid-pattern': "radial-gradient(#141414 1px, transparent 1px)",
+            },
+            boxShadow: {
+                'neo': '8px 8px 0px 0px #141414',
+                'neo-sm': '4px 4px 0px 0px #ccff00',
             }
         }
     },
