@@ -5,22 +5,30 @@ export default {
     theme: {
         extend: {
             colors: {
-                "primary": "#141414",
-                "background-light": "#f7f7f7",
-                "background-dark": "#191919",
-                "neon-green": "#ccff00",
-                "neon-purple": "#b026ff",
+                "bg-dark": "#0A0A0A",
+                "acid-green": "#ccff00",
+                "neon-purple": "#9D00FF",
+                "glass": "rgba(255, 255, 255, 0.03)",
             },
             fontFamily: {
-                "display": ["var(--font-jakarta)", "sans-serif"],
-                "mono": ["var(--font-space-mono)", "monospace"],
+                "mono": ["var(--font-jetbrains)", "monospace"],
             },
-            borderRadius: {
-                "DEFAULT": "0.25rem",
-                "lg": "0.5rem",
-                "xl": "0.75rem",
-                "full": "9999px"
+            backgroundImage: {
+                'carbon-fiber': "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')",
             },
+            boxShadow: {
+                'glow-green': '0 0 10px rgba(204, 255, 0, 0.4)',
+                'glow-purple': '0 0 10px rgba(157, 0, 255, 0.4)',
+            },
+            keyframes: {
+                ticker: {
+                    '0%': { transform: 'translateX(100%)' },
+                    '100%': { transform: 'translateX(-100%)' },
+                }
+            },
+            animation: {
+                ticker: 'ticker 30s linear infinite',
+            }
         },
     },
     plugins: [require("tailwindcss-animate")],

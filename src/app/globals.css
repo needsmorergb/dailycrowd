@@ -2,28 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --bg-dark: #0A0A0A;
+    --acid-green: #ccff00;
+    --neon-purple: #9D00FF;
+    --glass: rgba(255, 255, 255, 0.03);
+    /* Colors for Shadcn compatibility if needed, mapped to new palette */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 100%;
+    --primary: 82 100% 50%;
+    --primary-foreground: 0 0% 0%;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .neon-border-green {
+    border: 1px solid var(--acid-green);
+    box-shadow: 0 0 10px rgba(204, 255, 0, 0.4);
+  }
+
+  .neon-border-purple {
+    border: 1px solid var(--neon-purple);
+    box-shadow: 0 0 10px rgba(157, 0, 255, 0.4);
+  }
+}
+
 @layer utilities {
-  .grid-bg {
-    background-image: radial-gradient(#141414 1px, transparent 1px);
-    background-size: 20px 20px;
+  .scanlines {
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+        rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg,
+        rgba(255, 0, 0, 0.06),
+        rgba(0, 255, 0, 0.02),
+        rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
   }
 
   .glitch-text {
-    text-shadow: 2px 0 #ccff00, -2px 0 #b026ff;
+    text-shadow: 2px 0 var(--acid-green), -2px 0 var(--neon-purple);
   }
 
-  .neon-border {
-    box-shadow: 0 0 10px rgba(204, 255, 0, 0.3);
+  .digital-timer {
+    font-variant-numeric: tabular-nums;
   }
 
+  /* Custom Slider Styles */
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    height: 24px;
-    width: 24px;
-    border-radius: 50%;
-    background: #141414;
+    height: 20px;
+    width: 10px;
+    background: var(--acid-green);
     cursor: pointer;
-    border: 4px solid #ccff00;
-    box-shadow: 0 0 15px #ccff00;
+    box-shadow: 0 0 10px var(--acid-green);
+    border-radius: 0;
+    margin-top: -8px;
+  }
+
+  input[type=range]::-moz-range-thumb {
+    height: 20px;
+    width: 10px;
+    background: var(--acid-green);
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--acid-green);
+    border-radius: 0;
+    border: none;
+  }
+
+  input[type=range]::-webkit-slider-runnable-track {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+  }
+
+  /* Hide default appearance */
+  input[type=range] {
+    -webkit-appearance: none;
+    background: transparent;
   }
 }
