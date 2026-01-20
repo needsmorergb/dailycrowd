@@ -258,7 +258,7 @@ export default function OracleTerminal() {
                     <div className="flex gap-12 font-mono text-[11px] font-bold uppercase tracking-widest animate-pulse">
                         <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> User 892x hit 12.0x ROI (+$4,200)</span>
                         <span className="flex items-center gap-2 text-primary/40">●</span>
-                        <span className="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green-500"></span> Oracle_King hit 5.5x ROI (+$890)</span>
+                        <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> Oracle_King hit 5.5x ROI (+$890)</span>
                         <span className="flex items-center gap-2 text-primary/40">●</span>
                         <span className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-green-500"></span> DegenMaster hit 25.0x ROI (+$12,400)</span>
                     </div>
