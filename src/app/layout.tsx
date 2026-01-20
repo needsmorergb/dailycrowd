@@ -1,13 +1,22 @@
 import type { Metadata } from 'next'
-import { Outfit, Inter } from 'next/font/google'
+import { Plus_Jakarta_Sans, Space_Mono } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import Providers from '@/components/Providers'
-import AnimatedBackground from '@/components/AnimatedBackground'
 
-const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
+  display: 'swap',
+})
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  variable: '--font-space-mono',
+  weight: ['400', '700'],
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'CROWD | The Memecoin Oracle',
@@ -20,13 +29,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${outfit.variable} ${inter.variable} font-sans min-h-screen text-foreground antialiased selection:bg-primary selection:text-black`}>
+    <html lang="en" className="light">
+      <body className={`${jakarta.variable} ${spaceMono.variable} font-display min-h-screen bg-background text-foreground antialiased selection:bg-accent selection:text-primary`}>
         <Providers>
-          <AnimatedBackground />
-          <div className="relative z-10 min-h-screen flex flex-col">
+          <div className="relative min-h-screen flex flex-col grid-bg">
             <Header />
-            <main className="flex-grow container max-w-6xl mx-auto px-4">
+            <main className="flex-grow container max-w-[1600px] mx-auto px-4 md:px-10 py-8">
               {children}
             </main>
             <Footer />
