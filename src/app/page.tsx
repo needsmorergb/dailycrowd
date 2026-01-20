@@ -62,10 +62,10 @@ export default async function LandingPage() {
                 <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">LIVE</span>
               </div>
               <div className="text-4xl font-black text-white">$450</div>
-              <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
-                <span>🏆 Winner takes 95%</span>
-                <span>🔥 2.5% Burned</span>
-                <span>💰 2.5% Yield</span>
+              <div className="text-xs text-muted-foreground mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                <span>🏆 Winner 90%</span>
+                <span className="text-primary">🎰 5% Jackpot</span>
+                <span>🔥 2.5% Burn</span>
               </div>
             </div>
           </div>
@@ -78,10 +78,10 @@ export default async function LandingPage() {
             <div className="stat-value">$5</div>
             <div className="stat-label">Oracle Stake</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-icon">📈</div>
-            <div className="stat-value">$1,000</div>
-            <div className="stat-label">Daily SOL Pot</div>
+          <div className="stat-card neon-border">
+            <div className="stat-icon">🎰</div>
+            <div className="stat-value text-primary">$50k+</div>
+            <div className="stat-label text-primary">Weekly Jackpot</div>
           </div>
           <div className="stat-card">
             <div className="stat-icon">🧬</div>
