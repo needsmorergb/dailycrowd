@@ -1,14 +1,15 @@
 'use client';
 
-import React from "react";
+import React, { useState } from "react";
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export default function OracleTerminal() {
     const { connected } = useWallet();
+    const [isAntigravity, setIsAntigravity] = useState(false);
 
     return (
-        <div className="bg-background-light dark:bg-background-dark font-display text-primary min-h-screen">
+        <div className={`bg-background-light dark:bg-background-dark font-display text-primary min-h-screen transition-all duration-700 ${isAntigravity ? 'antigravity-active' : ''}`}>
             {/* Custom CSS from the original design (needed for background + slider thumb + effects) */}
             <style>{`
         .grid-bg {
@@ -34,7 +35,7 @@ export default function OracleTerminal() {
       `}</style>
 
             {/* Page wrapper */}
-            <div className="relative flex min-h-screen w-full flex-col grid-bg bg-opacity-5">
+            <div className={`relative flex min-h-screen w-full flex-col grid-bg bg-opacity-5 transition-all duration-700 ${isAntigravity ? 'pt-6' : ''}`}>
                 {/* Top Navigation */}
                 <header className="flex items-center justify-between whitespace-nowrap border-b-2 border-solid border-primary px-10 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50">
                     <div className="flex items-center gap-4 text-primary">
@@ -47,25 +48,21 @@ export default function OracleTerminal() {
                     </div>
 
                     <div className="flex flex-1 justify-end gap-8 items-center">
-                        <div className="flex items-center gap-9">
-                            <a
-                                className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors"
-                                href="#"
+
+                        {/* Antigravity Toggle & Nav Links */}
+                        <div className="flex items-center gap-6">
+                            <button
+                                onClick={() => setIsAntigravity(!isAntigravity)}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 transition-all ${isAntigravity ? 'bg-neon-purple text-white border-primary' : 'bg-transparent border-primary/20 text-primary/60 hover:border-primary'}`}
                             >
-                                Terminal
-                            </a>
-                            <a
-                                className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors"
-                                href="#"
-                            >
-                                Hall of Fame
-                            </a>
-                            <a
-                                className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors"
-                                href="#"
-                            >
-                                Whitepaper
-                            </a>
+                                <span className={`material-symbols-outlined text-sm ${isAntigravity ? 'animate-bounce' : ''}`}>public</span>
+                                <span className="text-[10px] font-black uppercase italic">Antigravity</span>
+                            </button>
+
+                            <div className="hidden lg:flex items-center gap-9">
+                                <a className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors" href="#">Terminal</a>
+                                <a className="text-primary text-sm font-bold leading-normal uppercase tracking-wider hover:text-neon-purple transition-colors" href="#">Hall of Fame</a>
+                            </div>
                         </div>
 
                         <div className="flex gap-3">
@@ -85,7 +82,7 @@ export default function OracleTerminal() {
                     </div>
                 </header>
 
-                <main className="flex-1 px-10 py-8 max-w-[1600px] mx-auto w-full">
+                <main className="flex-1 px-10 py-8 max-w-[1600px] mx-auto w-full transition-transform duration-500">
                     {/* Global Timer & Header Section */}
                     <div className="flex flex-col items-center mb-10">
                         <p className="text-primary/60 text-xs font-bold uppercase tracking-[0.3em] mb-4">
@@ -127,8 +124,8 @@ export default function OracleTerminal() {
                     </div>
 
                     <div className="grid grid-cols-12 gap-8">
-                        {/* Left Column: Token Info */}
-                        <div className="col-span-12 lg:col-span-3 space-y-6">
+                        {/* Left Column: Token Info (Floating Card) */}
+                        <div className="col-span-12 lg:col-span-3 space-y-6 floating-card">
                             <div className="p-6 rounded-xl border-2 border-primary bg-white shadow-[8px_8px_0px_0px_#141414]">
                                 <div className="flex items-center justify-between mb-4">
                                     <span className="px-2 py-1 bg-neon-green text-primary text-[10px] font-black uppercase tracking-tighter italic">
@@ -229,8 +226,8 @@ export default function OracleTerminal() {
                             </div>
                         </div>
 
-                        {/* Center Column: Prediction Zone */}
-                        <div className="col-span-12 lg:col-span-6 space-y-8">
+                        {/* Center Column: Prediction Zone (Floating Card Alt) */}
+                        <div className="col-span-12 lg:col-span-6 space-y-8 floating-card-alt">
                             <div className="p-8 rounded-2xl border-4 border-primary bg-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-neon-green/10 -mr-16 -mt-16 rounded-full blur-3xl"></div>
                                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-neon-purple/10 -ml-16 -mb-16 rounded-full blur-3xl"></div>
@@ -322,8 +319,8 @@ export default function OracleTerminal() {
                             </div>
                         </div>
 
-                        {/* Right Column: Pot & Stake */}
-                        <div className="col-span-12 lg:col-span-3 space-y-6">
+                        {/* Right Column: Pot & Stake (Floating Card) */}
+                        <div className="col-span-12 lg:col-span-3 space-y-6 floating-card">
                             <div className="p-6 rounded-xl border-2 border-primary bg-white shadow-[8px_8px_0px_0px_#141414]">
                                 <p className="text-xs font-black uppercase tracking-widest text-primary/40 mb-2 italic">
                                     Current Pot Size
