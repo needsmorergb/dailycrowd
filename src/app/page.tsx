@@ -58,10 +58,10 @@ export default async function LandingPage() {
 
             <div className="glass-card p-6 rounded-2xl">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-muted-foreground uppercase tracking-widest">Daily Prize Pot</span>
-                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">GUARANTEED</span>
+                <span className="text-sm text-muted-foreground uppercase tracking-widest">Current Round Pot</span>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">LIVE</span>
               </div>
-              <div className="text-4xl font-black text-white">$1,000</div>
+              <div className="text-4xl font-black text-white">$450</div>
               <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
                 <span>🏆 Winner takes 95%</span>
                 <span>🔥 2.5% Burned</span>
