@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import SliderEntry from '@/components/SliderEntry'
 import LiveCountdown from '@/components/LiveCountdown'
-
+import TargetTokenCard from '@/components/TargetTokenCard'
 import { getHistoricalMedianROI } from '@/lib/pump_api'
 
 export const dynamic = 'force-dynamic'
@@ -45,38 +45,28 @@ export default async function LandingPage() {
     <div className="py-8">
       <div className="container max-w-6xl">
 
-        {/* Main Grid Layout - 2 columns */}
-        <div className="grid lg:grid-cols-5 gap-6 mb-12">
+        {/* Target Token Focus */}
+        <div className="mb-8">
+          <TargetTokenCard />
+        </div>
 
-          {/* Left Column - Slider Entry (takes more space) */}
-          <div className="lg:col-span-3">
-            <SliderEntry />
-          </div>
+        <div className="grid md:grid-cols-2 gap-8 items-start mb-16">
+          <SliderEntry />
 
-          {/* Right Column - Pot, Countdown, Benefits */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Pot Display */}
-            <div className="pot-display">
-              <div className="pot-label">Daily Prize Pool</div>
-              <div className="pot-value">$1,000</div>
-              <div className="pot-usd">
-                <span>💵</span>
-                <span>Paid to winner</span>
-              </div>
-            </div>
-
-            {/* Live Countdown */}
+          <div className="space-y-4">
             <LiveCountdown lockTime="19:00" />
 
-            {/* Benefits */}
-            <div className="benefits-list">
-              <div className="benefits-title">
-                <span>✧</span>
-                CROWD Benefits
+            <div className="glass-card p-6 rounded-2xl">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground uppercase tracking-widest">Daily Prize Pot</span>
+                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded">GUARANTEED</span>
               </div>
-              <div className="benefits-item">One entry per account per day</div>
-              <div className="benefits-item">Live global leaderboards</div>
-              <div className="benefits-item">Direct payouts to winners</div>
+              <div className="text-4xl font-black text-white">$1,000</div>
+              <div className="text-xs text-muted-foreground mt-2 flex items-center gap-2">
+                <span>🏆 Winner takes 95%</span>
+                <span>🔥 2.5% Burned</span>
+                <span>💰 2.5% Yield</span>
+              </div>
             </div>
           </div>
         </div>
