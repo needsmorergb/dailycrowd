@@ -27,4 +27,27 @@
     border: 4px solid #ccff00;
     box-shadow: 0 0 15px #ccff00;
   }
+
+  /* Antigravity Animations */
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-15px);
+    }
+
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  .antigravity-active .floating-card {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .antigravity-active .floating-card-alt {
+    animation: float 8s ease-in-out infinite reverse;
+  }
 }
