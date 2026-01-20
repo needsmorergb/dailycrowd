@@ -41,7 +41,6 @@ export default function RootLayout({
             <main className="flex-1 w-full bg-transparent flex flex-col">
               {children}
             </main>
-            <Footer />
           </div>
         </Providers>
       </body>
