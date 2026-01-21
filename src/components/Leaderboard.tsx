@@ -13,11 +13,11 @@ const Leaderboard = () => {
     ];
 
     return (
-        <section id="leaderboard" className="py-20 px-10 border-t-4 border-primary bg-white grid-bg bg-opacity-5">
+        <section id="leaderboard" className="py-20 px-4 sm:px-10 border-t-4 border-primary bg-white grid-bg bg-opacity-5">
             <div className="max-w-6xl mx-auto">
                 <div className="mb-12">
-                    <h2 className="text-5xl font-black italic uppercase tracking-tighter mb-2">Leaderboard</h2>
-                    <p className="text-primary/60 font-bold uppercase tracking-widest text-xs">Skill-based rankings across all CROWD Oracle rounds</p>
+                    <h2 className="text-4xl sm:text-5xl font-black italic uppercase tracking-tighter mb-2">Leaderboard</h2>
+                    <p className="text-primary/60 font-bold uppercase tracking-widest text-[10px] sm:text-xs">Skill-based rankings across all CROWD Oracle rounds</p>
                 </div>
 
                 {/* Tabs */}
@@ -37,13 +37,13 @@ const Leaderboard = () => {
                 </div>
 
                 {/* Table Header */}
-                <div className="grid grid-cols-12 gap-4 px-8 py-4 bg-primary text-white rounded-t-2xl font-black uppercase text-[10px] tracking-widest">
-                    <div className="col-span-1">Rank</div>
-                    <div className="col-span-3">Wallet</div>
-                    <div className="col-span-2">Accuracy</div>
-                    <div className="col-span-2 text-center">Avg Dist.</div>
-                    <div className="col-span-2 text-center">Rounds</div>
-                    <div className="col-span-2 text-right">Wins</div>
+                <div className="grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 bg-primary text-white rounded-t-2xl font-black uppercase text-[10px] tracking-widest">
+                    <div className="col-span-2 sm:col-span-1">Rank</div>
+                    <div className="col-span-6 sm:col-span-3">Wallet</div>
+                    <div className="col-span-4 sm:col-span-2 text-right sm:text-left">Accuracy</div>
+                    <div className="hidden sm:block col-span-2 text-center">Avg Dist.</div>
+                    <div className="hidden sm:block col-span-2 text-center">Rounds</div>
+                    <div className="hidden sm:block col-span-2 text-right">Wins</div>
                 </div>
 
                 {/* Table Rows */}
@@ -51,9 +51,9 @@ const Leaderboard = () => {
                     {mockData.map((user, i) => (
                         <div
                             key={i}
-                            className={`grid grid-cols-12 gap-4 px-8 py-6 items-center border-t-2 border-primary/5 hover:bg-primary/5 transition-colors cursor-pointer group ${i === 0 ? 'border-t-0' : ''}`}
+                            className={`grid grid-cols-12 gap-4 px-4 sm:px-8 py-4 sm:py-6 items-center border-t-2 border-primary/5 hover:bg-primary/5 transition-colors cursor-pointer group ${i === 0 ? 'border-t-0' : ''}`}
                         >
-                            <div className="col-span-1">
+                            <div className="col-span-2 sm:col-span-1">
                                 <span className={`size-8 rounded-lg flex items-center justify-center font-mono font-bold text-lg ${user.rank === 1 ? 'bg-neon-green text-primary border-2 border-primary' :
                                     user.rank === 2 ? 'bg-primary/10 text-primary border-2 border-primary/20' :
                                         'text-primary/40'
@@ -61,10 +61,10 @@ const Leaderboard = () => {
                                     {user.rank}
                                 </span>
                             </div>
-                            <div className="col-span-3 flex items-center gap-3">
-                                <span className="font-mono font-black text-primary group-hover:text-neon-purple transition-colors">{user.wallet}</span>
+                            <div className="col-span-6 sm:col-span-3 flex items-center gap-2 sm:gap-3">
+                                <span className="font-mono font-black text-primary group-hover:text-neon-purple transition-colors truncate">{user.wallet}</span>
                                 {user.isHolder && (
-                                    <div className="relative group/holder">
+                                    <div className="relative group/holder shrink-0">
                                         <span className="material-symbols-outlined text-[10px] text-neon-purple font-black cursor-help">stars</span>
                                         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-32 p-2 bg-primary text-white text-[8px] rounded-lg opacity-0 group-hover/holder:opacity-100 transition-opacity pointer-events-none z-50 shadow-xl leading-relaxed text-center">
                                             $CROWD Token Holder
@@ -72,22 +72,22 @@ const Leaderboard = () => {
                                     </div>
                                 )}
                                 {user.badge && (
-                                    <span className="px-2 py-0.5 bg-primary text-white text-[8px] font-black uppercase rounded tracking-tighter italic">
+                                    <span className="hidden sm:inline-block px-2 py-0.5 bg-primary text-white text-[8px] font-black uppercase rounded tracking-tighter italic whitespace-nowrap">
                                         {user.badge}
                                     </span>
                                 )}
                             </div>
-                            <div className="col-span-2">
-                                <div className="flex items-center gap-2">
+                            <div className="col-span-4 sm:col-span-2 text-right">
+                                <div className="flex items-center justify-end sm:justify-start gap-2">
                                     <span className="font-mono font-bold text-lg">{user.accuracy}</span>
-                                    <div className="h-1.5 flex-1 bg-primary/10 rounded-full overflow-hidden">
+                                    <div className="hidden sm:block h-1.5 flex-1 bg-primary/10 rounded-full overflow-hidden">
                                         <div className="h-full bg-neon-green" style={{ width: user.accuracy }}></div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-span-2 text-center font-mono font-bold text-primary/60">{user.avgDist}</div>
-                            <div className="col-span-2 text-center font-mono font-bold text-primary/60">{user.rounds}</div>
-                            <div className="col-span-2 text-right font-mono font-black text-neon-purple">{user.wins}</div>
+                            <div className="hidden sm:block col-span-2 text-center font-mono font-bold text-primary/60">{user.avgDist}</div>
+                            <div className="hidden sm:block col-span-2 text-center font-mono font-bold text-primary/60">{user.rounds}</div>
+                            <div className="hidden sm:block col-span-2 text-right font-mono font-black text-neon-purple">{user.wins}</div>
                         </div>
                     ))}
                 </div>

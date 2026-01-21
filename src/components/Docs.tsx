@@ -24,12 +24,12 @@ const Docs = () => {
                         <li><span className="font-bold text-primary">Featured Rounds</span>: Every few hours. <span className="text-neon-purple font-black">0.05 SOL MIN</span>.</li>
                         <li><span className="font-bold text-primary">Daily Anchor</span>: 5 PM PST. High-stakes consensus. <span className="text-neon-purple font-black">0.06 SOL MIN</span>.</li>
                     </ul>
-                    <div className="grid grid-cols-5 gap-2 text-center text-[10px] font-black uppercase tracking-tighter">
-                        <div className="p-2 border border-primary/20 bg-primary/5 rounded">Entry</div>
-                        <div className="p-2 border border-primary/20 bg-primary/5 rounded">Prediction</div>
-                        <div className="p-2 border border-primary/20 bg-primary/5 rounded">Lock</div>
-                        <div className="p-2 border border-primary/20 bg-primary/5 rounded">Live</div>
-                        <div className="p-2 border border-primary/20 bg-primary/5 rounded">Resolution</div>
+                    <div className="flex flex-wrap sm:grid sm:grid-cols-5 gap-2 text-center text-[10px] font-black uppercase tracking-tighter">
+                        <div className="flex-1 min-w-[50px] p-2 border border-primary/20 bg-primary/5 rounded">Entry</div>
+                        <div className="flex-1 min-w-[50px] p-2 border border-primary/20 bg-primary/5 rounded">Prediction</div>
+                        <div className="flex-1 min-w-[50px] p-2 border border-primary/20 bg-primary/5 rounded">Lock</div>
+                        <div className="flex-1 min-w-[50px] p-2 border border-primary/20 bg-primary/5 rounded">Live</div>
+                        <div className="flex-1 min-w-[50px] p-2 border border-primary/20 bg-primary/5 rounded">Resolution</div>
                     </div>
                 </div>
             )

@@ -2,30 +2,30 @@ import React from 'react';
 
 const Tokenomics = () => {
     return (
-        <section id="tokenomics" className="py-24 px-10 border-t-4 border-primary bg-white grid-bg bg-opacity-5">
+        <section id="tokenomics" className="py-24 px-4 sm:px-10 border-t-4 border-primary bg-white grid-bg bg-opacity-5">
             <div className="max-w-6xl mx-auto">
-                <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+                <div className="flex flex-col sm:flex-row justify-between items-center sm:items-end mb-16 gap-8 text-center sm:text-left">
                     <div>
-                        <h2 className="text-6xl font-black italic uppercase tracking-tighter mb-4">$CROWD Token</h2>
-                        <p className="text-primary/60 font-bold uppercase tracking-widest text-sm">Economic integrity & value redistribution</p>
+                        <h2 className="text-4xl sm:text-6xl font-black italic uppercase tracking-tighter mb-4">$CROWD Token</h2>
+                        <p className="text-primary/60 font-bold uppercase tracking-widest text-[10px] sm:text-sm">Economic integrity & value redistribution</p>
                     </div>
-                    <div className="bg-primary text-neon-green p-6 border-4 border-primary rounded-2xl shadow-[8px_8px_0px_0px_#141414] rotate-3 text-center">
-                        <div className="text-4xl font-black italic tracking-tighter">1,000,000,000</div>
+                    <div className="bg-primary text-neon-green p-6 border-4 border-primary rounded-2xl shadow-[8px_8px_0px_0px_#141414] sm:rotate-3 text-center w-full sm:w-auto">
+                        <div className="text-3xl sm:text-4xl font-black italic tracking-tighter">1,000,000,000</div>
                         <div className="text-[10px] uppercase font-black tracking-[0.3em]">Total Supply</div>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12">
                     {/* Fee Flow Diagram */}
-                    <div className="bg-white border-4 border-primary rounded-3xl p-10 shadow-[12px_12px_0px_0px_#141414]">
-                        <h3 className="text-2xl font-black uppercase tracking-tighter mb-8 flex items-center gap-3">
+                    <div className="bg-white border-4 border-primary rounded-3xl p-6 sm:p-10 shadow-[12px_12px_0px_0px_#141414]">
+                        <h3 className="text-xl sm:text-2xl font-black uppercase tracking-tighter mb-8 flex items-center gap-3">
                             <span className="material-symbols-outlined text-neon-purple">cyclone</span>
                             Protocol Fee Flow
                         </h3>
 
                         <div className="space-y-6">
                             <div className="flex items-center gap-4">
-                                <div className="flex-1 p-4 bg-primary text-white rounded-xl font-black text-center italic text-xl border-2 border-primary shadow-[4px_4px_0px_0px_#b026ff]">ROUND ENTRY (100%)</div>
+                                <div className="flex-1 p-4 bg-primary text-white rounded-xl font-black text-center italic text-base sm:text-xl border-2 border-primary shadow-[4px_4px_0px_0px_#b026ff]">ROUND ENTRY (100%)</div>
                             </div>
 
                             <div className="flex justify-center py-2 h-12">

@@ -25,11 +25,11 @@ const Whitepaper = () => {
     ];
 
     return (
-        <section id="whitepaper" className="py-24 px-10 border-t-4 border-primary bg-black text-white">
+        <section id="whitepaper" className="py-24 px-4 sm:px-10 border-t-4 border-primary bg-black text-white">
             <div className="max-w-4xl mx-auto">
                 <div className="flex flex-col items-center text-center mb-16">
                     <div className="px-3 py-1 bg-neon-purple text-white text-[10px] font-black uppercase tracking-widest rounded mb-6">Strategic Paper</div>
-                    <h2 className="text-6xl font-black italic uppercase tracking-tighter mb-4">Whitepaper</h2>
+                    <h2 className="text-4xl sm:text-6xl font-black italic uppercase tracking-tighter mb-4">Whitepaper</h2>
                     <div className="w-24 h-1 bg-neon-purple rounded-full"></div>
                 </div>
 
@@ -40,7 +40,7 @@ const Whitepaper = () => {
                             <h3 className="text-2xl font-black uppercase tracking-tight mb-4 text-neon-purple/80 group-hover:text-neon-purple transition-colors">
                                 {section.title}
                             </h3>
-                            <p className="text-lg leading-relaxed text-white/70 font-display">
+                            <p className="text-base sm:text-lg leading-relaxed text-white/70 font-display">
                                 {section.content}
                             </p>
                         </div>

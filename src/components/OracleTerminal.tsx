@@ -252,8 +252,8 @@ export default function OracleTerminal() {
                     </div>
 
                     {/* Center: Nav Links */}
-                    <div className="flex-1 flex justify-center">
-                        <nav className="flex items-center gap-6 bg-white border-2 border-primary px-4 py-1.5 rounded-full shadow-[2px_2px_0px_0px_#141414]">
+                    <div className="flex-1 flex justify-center overflow-x-auto no-scrollbar">
+                        <nav className="flex items-center gap-6 bg-white border-2 border-primary px-4 py-1.5 rounded-full shadow-[2px_2px_0px_0px_#141414] whitespace-nowrap">
                             <button
                                 onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                                 className="font-bold text-xs uppercase tracking-wider hover:text-neon-purple transition-colors"
@@ -302,7 +302,7 @@ export default function OracleTerminal() {
                 </header>
 
                 {/* Main Content */}
-                <main className="flex-1 max-w-[1440px] mx-auto w-full px-10 pt-2 pb-20">
+                <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-10 pt-2 pb-20">
 
                     {/* Countdown Section */}
                     <div className="flex flex-col items-center mb-8">
@@ -398,11 +398,11 @@ export default function OracleTerminal() {
                         </div>
                     </div>
 
-                    {/* 3-Column Layout */}
-                    <div className="grid grid-cols-12 gap-8 items-start">
+                    {/* 3-Column Layout - Stacked on Mobile */}
+                    <div className="grid grid-cols-12 gap-6 lg:gap-8 items-start">
 
                         {/* Left Column (3 Spans) - Market Reality Layer (COLD) */}
-                        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+                        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4 lg:order-1 order-2">
                             <div className="flex flex-col gap-3 ml-2">
                                 <div className="text-[10px] font-black uppercase text-primary/30 tracking-[0.3em]">Market Reality Layer</div>
                                 <div className="h-[2px] w-12 bg-primary/10"></div>
@@ -503,7 +503,7 @@ export default function OracleTerminal() {
                         </div>
 
                         {/* Center Column (6 Spans) - Prediction Zone */}
-                        <div className="col-span-12 lg:col-span-6 flex flex-col gap-4">
+                        <div className="col-span-12 lg:col-span-6 flex flex-col gap-4 lg:order-2 order-1">
                             <div className="flex flex-col gap-3 items-center">
                                 <div className="text-[10px] font-black uppercase text-primary/30 tracking-[0.3em]">Oracle Prediction Protocol</div>
                                 <div className="h-[2px] w-24 bg-primary/10"></div>
@@ -543,7 +543,7 @@ export default function OracleTerminal() {
                                         </div>
                                     </div>
 
-                                    <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
+                                    <h2 className="text-4xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
                                         Forecast<br />The Peak
                                     </h2>
                                     <div className="flex items-center gap-4 mb-2">
@@ -666,7 +666,7 @@ export default function OracleTerminal() {
                         </div>
 
                         {/* Right Column (3 Spans) */}
-                        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4">
+                        <div className="col-span-12 lg:col-span-3 flex flex-col gap-4 lg:order-3 order-3">
                             <div className="flex flex-col gap-3 ml-2">
                                 <div className="text-[10px] font-black uppercase text-primary/30 tracking-[0.3em]">Economic Consensus Layer</div>
                                 <div className="h-[2px] w-12 bg-primary/10"></div>
@@ -743,7 +743,7 @@ export default function OracleTerminal() {
                                         </p>
                                     )}
 
-                                    <div className="grid grid-cols-4 gap-2">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                                         {[minFee.toString(), (minFee * 2).toFixed(2), (minFee * 5).toFixed(2), (minFee * 10).toFixed(2)].map(val => (
                                             <button
                                                 key={val}
