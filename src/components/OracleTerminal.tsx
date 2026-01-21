@@ -45,7 +45,7 @@ export default function OracleTerminal() {
     const [nextRoundTime, setNextRoundTime] = useState<Date | null>(null);
 
     // Economic Simulation State
-    const [potSol, setPotSol] = useState<number>(10.51);
+    const [potSol, setPotSol] = useState<number>(1.36);
     const [burnedTokens, setBurnedTokens] = useState<number>(1250);
 
     // Round Logic State
@@ -684,8 +684,8 @@ export default function OracleTerminal() {
                                     <h3 className={`${currentRoundType === 'ANCHOR' ? 'text-6xl' : 'text-5xl'} font-black italic`}>${((potSol + (activeBonus?.bonus || 0)) * 145).toLocaleString(undefined, { maximumFractionDigits: 0 })}</h3>
                                     <div className="flex flex-col items-center gap-1 mt-2">
                                         <p className="text-[12px] font-mono font-bold text-neon-purple">
-                                            {(potSol + (activeBonus?.bonus || 0)).toFixed(2)} SOL
-                                            {activeBonus?.bonus && activeBonus.bonus > 0 && (
+                                            {(potSol + (activeBonus?.bonus || 0)).toFixed(2)} sol
+                                            {activeBonus?.bonus !== undefined && activeBonus.bonus > 0 && (
                                                 <span className="text-[10px] ml-1 text-neon-green">+{activeBonus.bonus.toFixed(2)} (Reward)</span>
                                             )}
                                         </p>
