@@ -22,4 +22,14 @@ pub enum OracleError {
     Overflow,
     #[msg("Arithmetic error.")]
     MathError,
+    #[msg("Round is not in Announced state.")]
+    RoundNotAnnounced,
+    #[msg("Lobby time has not expired yet.")]
+    RoundNotExpired,
+    #[msg("Lobby time has expired.")]
+    RoundLobbyExpired,
+    #[msg("Round has been canceled.")]
+    RoundCanceled,
+    #[msg("Round is not canceled.")]
+    RoundNotCanceled,
 }

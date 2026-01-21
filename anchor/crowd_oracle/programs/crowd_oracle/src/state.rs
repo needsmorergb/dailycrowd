@@ -19,17 +19,24 @@ pub struct Round {
     pub lock_time: i64,
     pub resolve_time: i64,
     pub total_pot: u64,
+    pub player_count: u32,
     pub peak_roi_multiplier_bps: u32, // bps (e.g., 1.5x = 15000)
     pub status: RoundStatus,
     pub winner_count: u32,
+    pub announce_time: i64,
+    pub min_players: u32,
+    pub min_pot: u64,
+    pub max_lobby_duration: i64,
     pub bump: u8,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, PartialEq, Eq)]
 pub enum RoundStatus {
+    Announced,
     Open,
     Locked,
     Resolved,
+    Canceled,
 }
 
 #[account]
@@ -49,7 +56,7 @@ impl GlobalConfig {
 }
 
 impl Round {
-    pub const SIZE: usize = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 4 + 1 + 4 + 1;
+    pub const SIZE: usize = 8 + 8 + 32 + 8 + 8 + 8 + 8 + 4 + 4 + 1 + 4 + 8 + 4 + 8 + 8 + 1;
 }
 
 impl Entry {

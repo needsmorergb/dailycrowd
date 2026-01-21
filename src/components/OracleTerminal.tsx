@@ -43,6 +43,22 @@ const MIN_FEES = {
 export default function OracleTerminal() {
     const { connected, publicKey, sendTransaction } = useWallet();
     const { connection } = useConnection();
+
+    // QA / Simulation Gating (Moved to top for logic gating)
+    const [isSimulationMode, setIsSimulationMode] = useState(false);
+    const [logoClickCount, setLogoClickCount] = useState(0);
+
+    // Check URL for simulation trigger on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('sim') === 'true' || params.get('qa') === 'true') {
+                setIsSimulationMode(true);
+            }
+            if (params.get('state') === 'active') setRoundState('ACTIVE');
+        }
+    }, []);
+
     const [prediction, setPrediction] = useState<number>(15.0);
     const [stakeAmount, setStakeAmount] = useState<string>('');
     const [timeLeft, setTimeLeft] = useState<{ hours: string, minutes: string, seconds: string }>({ hours: '00', minutes: '00', seconds: '00' });
@@ -71,6 +87,52 @@ export default function OracleTerminal() {
     // VWAP Tracking
     const { peakVwap, peakRoi, addTrade } = useVwapPeak(launchPrice, roundStartTime);
 
+    // Round State Management
+    type RoundState = 'ANNOUNCED' | 'ACTIVE' | 'RESOLVED' | 'CANCELED';
+    const [roundState, setRoundState] = useState<RoundState>('ANNOUNCED');
+    const [lobbyPlayers, setLobbyPlayers] = useState(0);
+    const [lobbyEndTime] = useState(Date.now() + 15 * 60 * 1000); // 15 min lobby
+    const [elapsedLobbyTime, setElapsedLobbyTime] = useState(0);
+
+    const MIN_PLAYERS = 15;
+    const MIN_POT = 0.45;
+
+    // Simulation: Lobby Logic
+    const [showActivationMsg, setShowActivationMsg] = useState(false);
+    useEffect(() => {
+        if (roundState === 'ACTIVE') {
+            setShowActivationMsg(true);
+            const timer = setTimeout(() => setShowActivationMsg(false), 3000);
+            return () => clearTimeout(timer);
+        }
+
+        if (roundState !== 'ANNOUNCED') return;
+        if (!isSimulationMode) return; // ONLY RUN SIM IN SIM MODE
+
+        const interval = setInterval(() => {
+            setElapsedLobbyTime(prev => prev + 1);
+
+            // Sim: Auto-increment players to show progress
+            setLobbyPlayers(prev => {
+                // If thresholds met, Activate!
+                if (prev >= MIN_PLAYERS - 1) { // -1 because we are about to increment to target
+                    setRoundState('ACTIVE');
+                    return prev + 1;
+                }
+                const chance = Math.random();
+                return chance > 0.7 ? prev + 1 : prev;
+            });
+
+            // Sim: Check Timeout
+            if (Date.now() > lobbyEndTime) {
+                setRoundState('CANCELED');
+            }
+
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [roundState, lobbyEndTime, isSimulationMode]);
+
     // Token Selection State
     const [candidates, setCandidates] = useState<TokenCandidate[]>([]);
     const [selectedToken, setSelectedToken] = useState<TokenCandidate | null>(null);
@@ -82,19 +144,7 @@ export default function OracleTerminal() {
     const [isTokenHolder] = useState(true);
     const [showHoldersView, setShowHoldersView] = useState(false);
 
-    // QA / Simulation Gating
-    const [isSimulationMode, setIsSimulationMode] = useState(false);
-    const [logoClickCount, setLogoClickCount] = useState(0);
 
-    // Check URL for simulation trigger on mount
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('sim') === 'true' || params.get('qa') === 'true') {
-                setIsSimulationMode(true);
-            }
-        }
-    }, []);
 
     const handleLogoClick = () => {
         const newCount = logoClickCount + 1;
@@ -403,7 +453,17 @@ export default function OracleTerminal() {
                 </header>
 
                 {/* Main Content */}
-                <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-10 pt-2 pb-20">
+                {/* Main Content */}
+                <main className="flex-1 max-w-[1440px] mx-auto w-full px-4 sm:px-10 pt-2 pb-20 relative">
+                    {/* Activation Notification */}
+                    {showActivationMsg && (
+                        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-bounce">
+                            <div className="bg-neon-green text-primary px-6 py-3 rounded-full border-2 border-primary font-black uppercase tracking-widest shadow-[0_0_20px_rgba(189,255,25,0.6)] flex items-center gap-2">
+                                <span className="material-symbols-outlined">bolt</span>
+                                Round activated — tracking begins now
+                            </div>
+                        </div>
+                    )}
 
                     {/* Countdown Section */}
                     <div className="flex flex-col items-center mb-8">
@@ -510,105 +570,154 @@ export default function OracleTerminal() {
                             </div>
                             {/* Live Asset Card - COLD STYLING */}
                             <div className="bg-[#f0f0f0] border-2 border-primary/40 rounded-lg p-6 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,0.05)]">
-                                {/* Early Reveal Wrapper (Holders see 60s earlier) */}
-                                {(!isTokenLocked && timeLeft.minutes === '01' && parseInt(timeLeft.seconds) > 30 && !isTokenHolder) ? (
-                                    <div className="py-12 flex flex-col items-center justify-center text-center transition-all">
-                                        <span className="material-symbols-outlined text-primary/10 text-5xl mb-4">visibility_off</span>
-                                        <p className="text-xs font-black uppercase tracking-widest text-primary/40 leading-tight">
-                                            {currentRoundType === 'FEATURED' ? 'Featured round' : 'Next token'}<br />
-                                            {currentRoundType === 'FEATURED' ? 'starting soon' : 'revealed soon'}
+                                {roundState === 'ANNOUNCED' ? (
+                                    <div className="py-8 px-4 flex flex-col items-center justify-center text-center">
+                                        <div className="animate-pulse mb-6">
+                                            <span className="material-symbols-outlined text-primary/30 text-6xl">hourglass_empty</span>
+                                        </div>
+                                        <h3 className="text-xl font-black uppercase italic leading-tight mb-2">Waiting for<br />Players to Join</h3>
+                                        <p className="text-[10px] font-mono text-primary/60 mb-8 max-w-[200px]">
+                                            This round will begin automatically once enough players have entered.
                                         </p>
-                                        <div className="mt-6 flex items-center gap-2 px-4 py-1.5 bg-primary/5 rounded-full border border-primary/10">
-                                            <span className="material-symbols-outlined text-[10px] text-neon-purple">token</span>
-                                            <span className="text-[9px] font-black text-primary/60 uppercase tracking-tighter">$CROWD Holders see 60s earlier</span>
+
+                                        {/* Player Progress */}
+                                        <div className="w-full mb-6">
+                                            <div className="flex justify-between text-[10px] font-black uppercase mb-1">
+                                                <span>Participation</span>
+                                                <span>{Math.min(100, (lobbyPlayers / MIN_PLAYERS) * 100).toFixed(0)}%</span>
+                                            </div>
+                                            <div className="h-4 w-full bg-primary/10 rounded-full border border-primary/20 overflow-hidden relative">
+                                                <div
+                                                    className="h-full bg-neon-purple transition-all duration-500 ease-out relative"
+                                                    style={{ width: `${Math.min(100, (lobbyPlayers / MIN_PLAYERS) * 100)}%` }}
+                                                >
+                                                    <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+                                                </div>
+                                                {/* Threshold Marker */}
+                                                <div className="absolute top-0 bottom-0 w-[2px] bg-primary/20 left-[100%]"></div>
+                                            </div>
+                                            <div className="flex justify-between mt-1">
+                                                <span className="text-[10px] font-mono text-primary/60">{lobbyPlayers} / {MIN_PLAYERS} Players</span>
+                                                <span className="text-[10px] font-mono text-primary/60">{format(new Date(lobbyEndTime - Date.now()), 'mm:ss')} left</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Stats Grid */}
+                                        <div className="grid grid-cols-2 gap-4 w-full border-t border-primary/10 pt-4">
+                                            <div className="bg-primary/5 p-2 rounded">
+                                                <p className="text-[9px] font-black uppercase text-primary/40">Current Pot</p>
+                                                <p className="font-mono font-bold">{potSol} SOL</p>
+                                            </div>
+                                            <div className="bg-primary/5 p-2 rounded">
+                                                <p className="text-[9px] font-black uppercase text-primary/40">Min Pot</p>
+                                                <p className="font-mono font-bold">{MIN_POT} SOL</p>
+                                            </div>
                                         </div>
                                     </div>
                                 ) : (
                                     <>
-                                        <div className="flex justify-between items-start mb-6">
-                                            <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white relative">
-                                                {selectedToken?.image ? (
-                                                    <img
-                                                        src={selectedToken.image}
-                                                        alt={selectedToken.symbol}
-                                                        className="w-full h-full object-cover"
-                                                        onError={(e) => {
-                                                            // Fallback to Dexscreener if Pump.fun image fails
-                                                            (e.target as HTMLImageElement).src = `https://dd.dexscreener.com/ds-data/tokens/solana/${selectedToken.mint}.png`;
-                                                        }}
-                                                    />
-                                                ) : (
-                                                    <div className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/20">
-                                                        <span className="material-symbols-outlined text-4xl">token</span>
-                                                    </div>
-                                                )}
+                                        {/* Early Reveal Wrapper (Holders see 60s earlier) */}
+                                        {(!isTokenLocked && timeLeft.minutes === '01' && parseInt(timeLeft.seconds) > 30 && !isTokenHolder) ? (
+                                            <div className="py-12 flex flex-col items-center justify-center text-center transition-all">
+                                                <span className="material-symbols-outlined text-primary/10 text-5xl mb-4">visibility_off</span>
+                                                <p className="text-xs font-black uppercase tracking-widest text-primary/40 leading-tight">
+                                                    {currentRoundType === 'FEATURED' ? 'Featured round' : 'Next token'}<br />
+                                                    {currentRoundType === 'FEATURED' ? 'starting soon' : 'revealed soon'}
+                                                </p>
+                                                <div className="mt-6 flex items-center gap-2 px-4 py-1.5 bg-primary/5 rounded-full border border-primary/10">
+                                                    <span className="material-symbols-outlined text-[10px] text-neon-purple">token</span>
+                                                    <span className="text-[9px] font-black text-primary/60 uppercase tracking-tighter">$CROWD Holders see 60s earlier</span>
+                                                </div>
                                             </div>
-                                            <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
-                                        </div>
+                                        ) : (
+                                            <>
+                                                <div className="flex justify-between items-start mb-6">
+                                                    <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white relative">
+                                                        {selectedToken?.image ? (
+                                                            <img
+                                                                src={selectedToken.image}
+                                                                alt={selectedToken.symbol}
+                                                                className="w-full h-full object-cover"
+                                                                onError={(e) => {
+                                                                    // Fallback to Dexscreener if Pump.fun image fails
+                                                                    (e.target as HTMLImageElement).src = `https://dd.dexscreener.com/ds-data/tokens/solana/${selectedToken.mint}.png`;
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/20">
+                                                                <span className="material-symbols-outlined text-4xl">token</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
+                                                </div>
 
-                                        <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
-                                        <div className="flex flex-col mb-6">
-                                            <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mb-1">Token Address</p>
-                                            <p className="text-[10px] font-mono text-primary/70 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
-                                                {selectedToken?.mint || 'Scanning chain...'}
-                                            </p>
+                                                <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
+                                                <div className="flex flex-col mb-6">
+                                                    <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mb-1">Token Address</p>
+                                                    <p className="text-[10px] font-mono text-primary/70 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
+                                                        {selectedToken?.mint || 'Scanning chain...'}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        <div className="space-y-4">
+                                            <div>
+                                                <div className="flex justify-between text-xs font-bold uppercase mb-1">
+                                                    <span>Bonding</span>
+                                                    <span>{Math.min(99, Math.floor(selectedToken?.bondingProgress || 45))}%</span>
+                                                </div>
+                                                <div className="h-4 w-full bg-primary/10 rounded-full border-2 border-primary overflow-hidden">
+                                                    <div className="h-full bg-neon-purple relative" style={{ width: `${Math.min(99, selectedToken?.bondingProgress || 45)}%` }}>
+                                                        <div className="absolute right-0 top-0 bottom-0 w-1 bg-white"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4 py-4 border-t-2 border-dashed border-primary/20">
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase text-primary/60">Market Cap</p>
+                                                    <p className="font-mono font-bold text-primary">
+                                                        ${selectedToken?.mcUsd
+                                                            ? selectedToken.mcUsd >= 1000000
+                                                                ? (selectedToken.mcUsd / 1000000).toFixed(1) + 'M'
+                                                                : (selectedToken.mcUsd / 1000).toFixed(1) + 'K'
+                                                            : '$1.24M'}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-[10px] font-black uppercase text-primary/60">Current ROI</p>
+                                                    <p className="font-mono font-bold text-neon-purple">{(peakVwap / (launchPrice || 1)).toFixed(1)}x</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="p-3 bg-primary/5 rounded-lg border-2 border-primary/10 mb-4">
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-[10px] font-black uppercase text-primary/60">VWAP Peak (30s)</span>
+                                                    <span className="font-mono font-bold text-xs text-primary">{peakRoi.toFixed(2)}x</span>
+                                                </div>
+                                                <div className="mt-1 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-neon-green" style={{ width: `${Math.min(100, (peakRoi / 30) * 100)}%` }}></div>
+                                                </div>
+                                            </div>
+
+                                            <a
+                                                href={selectedToken
+                                                    ? (selectedToken.mint.endsWith('pump')
+                                                        ? `https://pump.fun/coin/${selectedToken.mint}`
+                                                        : `https://dexscreener.com/solana/${selectedToken.mint}`)
+                                                    : '#'}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className={`w-full py-4 bg-primary text-white font-black italic uppercase text-xl hover:bg-white hover:text-primary transition-colors border-2 border-primary flex items-center justify-center gap-2 group ${!selectedToken ? 'opacity-50 pointer-events-none' : ''}`}
+                                            >
+                                                <span>View Chart</span>
+                                                <span className="material-symbols-outlined group-hover:rotate-45 transition-transform">arrow_outward</span>
+                                            </a>
                                         </div>
                                     </>
                                 )}
-
-                                <div className="space-y-4">
-                                    <div>
-                                        <div className="flex justify-between text-xs font-bold uppercase mb-1">
-                                            <span>Bonding</span>
-                                            <span>{Math.min(99, Math.floor(selectedToken?.bondingProgress || 45))}%</span>
-                                        </div>
-                                        <div className="h-4 w-full bg-primary/10 rounded-full border-2 border-primary overflow-hidden">
-                                            <div className="h-full bg-neon-purple relative" style={{ width: `${Math.min(99, selectedToken?.bondingProgress || 45)}%` }}>
-                                                <div className="absolute right-0 top-0 bottom-0 w-1 bg-white"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 py-4 border-t-2 border-dashed border-primary/20">
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase text-primary/60">Market Cap</p>
-                                            <p className="font-mono font-bold text-primary">
-                                                ${selectedToken?.mcUsd
-                                                    ? selectedToken.mcUsd >= 1000000
-                                                        ? (selectedToken.mcUsd / 1000000).toFixed(1) + 'M'
-                                                        : (selectedToken.mcUsd / 1000).toFixed(1) + 'K'
-                                                    : '$1.24M'}
-                                            </p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-black uppercase text-primary/60">Current ROI</p>
-                                            <p className="font-mono font-bold text-neon-purple">{(peakVwap / (launchPrice || 1)).toFixed(1)}x</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="p-3 bg-primary/5 rounded-lg border-2 border-primary/10 mb-4">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-[10px] font-black uppercase text-primary/60">VWAP Peak (30s)</span>
-                                            <span className="font-mono font-bold text-xs text-primary">{peakRoi.toFixed(2)}x</span>
-                                        </div>
-                                        <div className="mt-1 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
-                                            <div className="h-full bg-neon-green" style={{ width: `${Math.min(100, (peakRoi / 30) * 100)}%` }}></div>
-                                        </div>
-                                    </div>
-
-                                    <a
-                                        href={selectedToken
-                                            ? (selectedToken.mint.endsWith('pump')
-                                                ? `https://pump.fun/coin/${selectedToken.mint}`
-                                                : `https://dexscreener.com/solana/${selectedToken.mint}`)
-                                            : '#'}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="w-full py-4 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-all flex items-center justify-center shadow-[4px_4px_00px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
-                                    >
-                                        View Full Chart
-                                    </a>
-                                </div>
                             </div>
 
                             {/* Community Predictions */}
@@ -932,8 +1041,12 @@ export default function OracleTerminal() {
                                             </>
                                         ) : (
                                             <>
-                                                <span className="group-hover:mr-2 transition-all">Lock It In</span>
-                                                <span className="material-symbols-outlined align-middle text-sm absolute right-12 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">lock</span>
+                                                <span className="group-hover:mr-2 transition-all">
+                                                    {roundState === 'ANNOUNCED' ? 'Join Lobby & Start Round' : 'Lock It In'}
+                                                </span>
+                                                <span className="material-symbols-outlined align-middle text-sm absolute right-12 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">
+                                                    {roundState === 'ANNOUNCED' ? 'play_arrow' : 'lock'}
+                                                </span>
                                             </>
                                         )}
                                     </span>

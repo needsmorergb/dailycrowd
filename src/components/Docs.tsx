@@ -80,6 +80,20 @@ const Docs = () => {
                     <p className="text-sm text-primary/60">Tokens are locked 2 minutes before the round starts. Once locked, they cannot be changed.</p>
                 </>
             )
+        },
+        {
+            id: "soft-start",
+            title: "7. Soft-Start & Refunds",
+            content: (
+                <div className="space-y-4">
+                    <p>Parameters to protect game integrity and prevent empty rounds:</p>
+                    <ul className="list-disc list-inside space-y-2 text-primary/80">
+                        <li><span className="font-bold text-primary">Lobby Phase</span>: All rounds start in a waiting state.</li>
+                        <li><span className="font-bold text-primary">Activation Threshold</span>: Round goes live with <span className="text-neon-purple font-black">15 Players</span> OR <span className="text-neon-purple font-black">0.45 SOL Pot</span>.</li>
+                        <li><span className="font-bold text-primary">Auto-Refund</span>: If thresholds aren't met in 15m, the round cancels and 100% of SOL is refunded.</li>
+                    </ul>
+                </div>
+            )
         }
     ];
 

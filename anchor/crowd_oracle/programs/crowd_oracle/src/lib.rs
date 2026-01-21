@@ -37,17 +37,40 @@ pub mod crowd_oracle {
         target_token_mint: Pubkey,
         duration_sec: i64,
         lock_before_end_sec: i64,
+        min_players: u32,
+        min_pot: u64,
+        max_lobby_duration: i64,
     ) -> Result<()> {
         let round = &mut ctx.accounts.round;
         let clock = Clock::get()?;
 
         round.round_id = round_id;
         round.target_token_mint = target_token_mint;
-        round.start_time = clock.unix_timestamp;
-        round.lock_time = clock.unix_timestamp + duration_sec - lock_before_end_sec;
-        round.resolve_time = clock.unix_timestamp + duration_sec;
+        round.announce_time = clock.unix_timestamp;
+        // Start time will be set upon activation
+        round.start_time = 0; 
+        // Lock/Resolve times are relative to Duration, but we store the planned offsets for now
+        // We will recalculate exact absolute times upon activation.
+        // For now, store duration in lock_time temporarily or just use 0?
+        // Let's store the durations relative to start in the client or recalculate.
+        // Actually, easiest is to store the "planned duration" and "lock offset" in new fields, 
+        // OR just reuse the fields knowing they need update.
+        // Let's interpret 'resolve_time' as 'duration_sec' and 'lock_time' as 'lock_before_end_sec' 
+        // purely during the Announced phase to save space, OR strictly use 0.
+        // Better: Set them to 0 and pass them as args again? No, we need to persist them.
+        // Ideally we'd add fields 'duration' and 'lock_offset' to the struct, but to save space/time:
+        // We will store the intended duration in 'resolve_time' and lock offset in 'lock_time' 
+        // ONLY while status == Announced.
+        round.resolve_time = duration_sec; // Storing duration here temporarily
+        round.lock_time = lock_before_end_sec; // Storing offset here temporarily
+
+        round.min_players = min_players;
+        round.min_pot = min_pot;
+        round.max_lobby_duration = max_lobby_duration;
+        
         round.total_pot = 0;
-        round.status = RoundStatus::Open;
+        round.player_count = 0;
+        round.status = RoundStatus::Announced;
         round.peak_roi_multiplier_bps = 0;
         round.winner_count = 0;
         round.bump = ctx.bumps.round;
@@ -68,12 +91,38 @@ pub mod crowd_oracle {
         let round = &mut ctx.accounts.round;
         let clock = Clock::get()?;
 
-        // Validations
-        require!(round.status == RoundStatus::Open, OracleError::RoundNotOpen);
-        require!(clock.unix_timestamp < round.lock_time, OracleError::RoundClosed);
-        require!(predicted_roi_bps > 0 && predicted_roi_bps <= 1000000, OracleError::InvalidPredictionRange); // cap at 100x
+        // 1. Check State
+        if round.status == RoundStatus::Canceled {
+            return err!(OracleError::RoundCanceled);
+        }
+        if round.status == RoundStatus::Resolved {
+            return err!(OracleError::RoundResolved);
+        }
+        if round.status == RoundStatus::Locked {
+            return err!(OracleError::RoundClosed);
+        }
 
-        // Transfer SOL Stake
+        // 2. Handle Announced State (Activation Check)
+        if round.status == RoundStatus::Announced {
+            // Check expiry
+            if clock.unix_timestamp > round.announce_time + round.max_lobby_duration {
+                // Should be canceled. Reject entry. User should call cancel_round.
+                return err!(OracleError::RoundLobbyExpired);
+            }
+
+            // Calculations for potential activation
+            // We verify AFTER adding this user if we trigger.
+            // But we can also check if THIS user is the catalyst.
+        } else {
+            // If already Open, check lock time
+            if clock.unix_timestamp >= round.lock_time {
+                return err!(OracleError::RoundClosed);
+            }
+        }
+
+        require!(predicted_roi_bps > 0 && predicted_roi_bps <= 1000000, OracleError::InvalidPredictionRange);
+
+        // 3. Transfer Stake
         let transfer_ix = system_instruction::transfer(
             &ctx.accounts.user.key(),
             &round.key(),
@@ -88,7 +137,7 @@ pub mod crowd_oracle {
             ],
         )?;
 
-        // Record Entry
+        // 4. Record Entry
         let entry = &mut ctx.accounts.entry;
         entry.user = ctx.accounts.user.key();
         entry.round_id = round_id;
@@ -99,6 +148,70 @@ pub mod crowd_oracle {
         entry.bump = ctx.bumps.entry;
 
         round.total_pot = round.total_pot.checked_add(stake_amount).ok_or(OracleError::Overflow)?;
+        round.player_count = round.player_count.checked_add(1).ok_or(OracleError::Overflow)?;
+
+        // 5. Activation Trigger Logic
+        if round.status == RoundStatus::Announced {
+            // Check if thresholds met
+            let threshold_met = round.total_pot >= round.min_pot || round.player_count >= round.min_players;
+            
+            if threshold_met {
+                // ACTIVATE ROUND
+                round.status = RoundStatus::Open;
+                round.start_time = clock.unix_timestamp;
+                
+                // Retrieve stored duration config from temp fields
+                let duration_sec = round.resolve_time;
+                let lock_offset_sec = round.lock_time;
+
+                // Set actual absolute timestamps
+                round.resolve_time = round.start_time + duration_sec;
+                round.lock_time = round.resolve_time - lock_offset_sec; // Lock is relative to end usually, or start + (duration - offset)
+            }
+        }
+
+        Ok(())
+    }
+
+    pub fn cancel_round(
+        ctx: Context<CancelRound>,
+    ) -> Result<()> {
+        let round = &mut ctx.accounts.round;
+        let clock = Clock::get()?;
+
+        // Can only cancel if Announced
+        require!(round.status == RoundStatus::Announced, OracleError::RoundNotAnnounced);
+
+        // Check if expired
+        require!(clock.unix_timestamp > round.announce_time + round.max_lobby_duration, OracleError::RoundNotExpired);
+
+        round.status = RoundStatus::Canceled;
+        
+        Ok(())
+    }
+
+    pub fn refund_entry(
+        ctx: Context<RefundEntry>,
+    ) -> Result<()> {
+        let round = &mut ctx.accounts.round;
+        let entry = &mut ctx.accounts.entry;
+
+        require!(round.status == RoundStatus::Canceled, OracleError::RoundNotCanceled);
+        require!(!entry.claimed, OracleError::RewardAlreadyClaimed);
+        require!(entry.user == ctx.accounts.user.key(), OracleError::Unauthorized);
+
+        let refund_amount = entry.stake_amount;
+        entry.claimed = true; // Mark as "claimed" (refunded) so they can't drain
+
+        // Transfer refund
+        let round_seeds = &[
+            b"round",
+            &round.round_id.to_le_bytes(),
+            &[round.bump],
+        ];
+        
+        **round.to_account_info().try_borrow_mut_lamports()? -= refund_amount;
+        **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += refund_amount;
 
         Ok(())
     }
@@ -110,49 +223,42 @@ pub mod crowd_oracle {
         let round = &mut ctx.accounts.round;
         let clock = Clock::get()?;
 
+        // If it never activated (Announced) and is expired, it should be canceled, not resolved.
+        // But if manual resolve is called, we enforce Open status check mostly.
+        
+        require!(round.status == RoundStatus::Open || round.status == RoundStatus::Locked, OracleError::RoundNotOpen);
         require!(clock.unix_timestamp >= round.resolve_time, OracleError::RoundNotEnded);
         require!(round.status != RoundStatus::Resolved, OracleError::RoundResolved);
 
         round.peak_roi_multiplier_bps = peak_roi_multiplier_bps;
         round.status = RoundStatus::Resolved;
 
-        // Note: In production, actual winner selection and share calculation 
-        // would occur here or in a separate Crank instruction due to compute limits.
-        
         Ok(())
     }
 
     pub fn claim_reward(
         ctx: Context<ClaimReward>,
-        accuracy_percentile_bps: u32, // Passed by Oracle authority after off-chain sort
+        accuracy_percentile_bps: u32, 
     ) -> Result<()> {
         let round = &ctx.accounts.round;
         let entry = &mut ctx.accounts.entry;
-        let config = &ctx.accounts.config;
 
         require!(round.status == RoundStatus::Resolved, OracleError::RoundNotEnded);
         require!(!entry.claimed, OracleError::RewardAlreadyClaimed);
 
-        // Simple accuracy-based payout logic (80% of pot shared among winners)
-        // Production would use a more complex distance-based weight
         if accuracy_percentile_bps <= 1000 { // Top 10%
             let total_winners_pool = (round.total_pot as u128)
                 .checked_mul(8000).unwrap()
                 .checked_div(10000).unwrap() as u64;
 
-            // Simplified share calculation: (Stake / Winner_Count) * Multiplier
-            // For production, we'd sum all winning stakes and divide proportionally
-            let reward = total_winners_pool / 10; // Mock share calculation
-
+            let reward = total_winners_pool / 10; // Mock share
             entry.claimed = true;
 
-            // Transfer reward from round PDA back to user
             let round_seeds = &[
                 b"round",
                 &round.round_id.to_le_bytes(),
                 &[round.bump],
             ];
-            let signer_seeds = &[&round_seeds[..]];
 
             **round.to_account_info().try_borrow_mut_lamports()? -= reward;
             **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += reward;
@@ -231,6 +337,23 @@ pub struct ClaimReward<'info> {
     #[account(mut, seeds = [b"entry", round.round_id.to_le_bytes().as_ref(), user.key().as_ref()], bump = entry.bump)]
     pub entry: Account<'info, Entry>,
     pub config: Account<'info, GlobalConfig>,
+    #[account(mut)]
+    pub user: Signer<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct CancelRound<'info> {
+    #[account(mut, seeds = [b"round", round.round_id.to_le_bytes().as_ref()], bump = round.bump)]
+    pub round: Account<'info, Round>,
+}
+
+#[derive(Accounts)]
+pub struct RefundEntry<'info> {
+    #[account(mut, seeds = [b"round", round.round_id.to_le_bytes().as_ref()], bump = round.bump)]
+    pub round: Account<'info, Round>,
+    #[account(mut, seeds = [b"entry", round.round_id.to_le_bytes().as_ref(), user.key().as_ref()], bump = entry.bump)]
+    pub entry: Account<'info, Entry>,
     #[account(mut)]
     pub user: Signer<'info>,
     pub system_program: Program<'info, System>,

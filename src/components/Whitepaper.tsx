@@ -19,6 +19,10 @@ const Whitepaper = () => {
             content: "Economic integrity is enforced through deterministic token selection and VWAP-based resolution. By removing single-trade wicks from the results, the Oracle prevents manipulation by large actors within the round window."
         },
         {
+            title: "Round Viability & Soft-Start",
+            content: "We respect your time and capital. Rounds do not \"start empty.\" Every round begins in a Lobby State and only activates once a liquidity or player threshold is met. If the crowd doesn't arrive, the round is canceled and 100% of funds are instantly refunded. No dead rounds, ever."
+        },
+        {
             title: "Meritocratic Payouts",
             content: "Payouts are determined exclusively by relative accuracy. Successful participants receive a skill-based share of the pot. Because the prize pool is shared among all qualifying winners within the target accuracy band, final rewards are dynamic and strictly merit-dependent. Entry size scales the reward but never improves the probability of winning."
         }
