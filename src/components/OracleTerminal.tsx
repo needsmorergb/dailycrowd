@@ -82,6 +82,33 @@ export default function OracleTerminal() {
     const [isTokenHolder] = useState(true);
     const [showHoldersView, setShowHoldersView] = useState(false);
 
+    // QA / Simulation Gating
+    const [isSimulationMode, setIsSimulationMode] = useState(false);
+    const [logoClickCount, setLogoClickCount] = useState(0);
+
+    // Check URL for simulation trigger on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('sim') === 'true' || params.get('qa') === 'true') {
+                setIsSimulationMode(true);
+            }
+        }
+    }, []);
+
+    const handleLogoClick = () => {
+        const newCount = logoClickCount + 1;
+        if (newCount >= 5) {
+            setIsSimulationMode(!isSimulationMode);
+            setLogoClickCount(0);
+            console.log(`Simulation Mode: ${!isSimulationMode ? 'ENABLED' : 'DISABLED'}`);
+        } else {
+            setLogoClickCount(newCount);
+            // Reset count if not clicked for 2 seconds
+            setTimeout(() => setLogoClickCount(0), 2000);
+        }
+    };
+
     const selector = React.useMemo(() => new TokenSelector(), []);
 
     // Payout Simulation
@@ -149,6 +176,8 @@ export default function OracleTerminal() {
 
     // Simulate Trades & Pot Growth
     useEffect(() => {
+        if (!isSimulationMode) return;
+
         const interval = setInterval(() => {
             // 1. Simulate Pot/Burn from "other players"
             if (Math.random() > 0.92) {
@@ -179,8 +208,9 @@ export default function OracleTerminal() {
                 addTrade(newPrice, volume);
             }
         }, 2000);
+
         return () => clearInterval(interval);
-    }, [peakVwap, launchPrice, addTrade, selectedToken, activeBonus]);
+    }, [peakVwap, launchPrice, addTrade, selectedToken, activeBonus, isSimulationMode]);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -274,12 +304,16 @@ export default function OracleTerminal() {
                 {/* Navbar */}
                 <header className="flex items-center justify-between px-10 py-3 border-b-2 border-primary bg-white/90 backdrop-blur-sm sticky top-0 z-50">
                     {/* Left: Logo */}
-                    <div className="flex items-center gap-3 w-[240px]">
+                    <div
+                        className="flex items-center gap-3 w-[240px] cursor-pointer select-none"
+                        onClick={handleLogoClick}
+                    >
                         <div className="size-8 bg-primary text-neon-green flex items-center justify-center rounded-lg shadow-[2px_2px_0px_0px_rgba(204,255,0,1)]">
                             <span className="material-symbols-outlined text-xl">query_stats</span>
                         </div>
                         <h1 className="text-xl font-black italic tracking-tighter uppercase leading-none">
                             CROWD<br /><span className="text-[10px] tracking-widest text-primary/60 not-italic font-bold">ORACLE</span>
+                            {isSimulationMode && <span className="block text-[8px] text-neon-purple animate-pulse">QA MODE</span>}
                         </h1>
                     </div>
 
