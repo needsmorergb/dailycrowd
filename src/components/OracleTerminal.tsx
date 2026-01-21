@@ -348,17 +348,43 @@ export default function OracleTerminal() {
                     </div>
 
                     {/* Right: Actions */}
-                    <div className="flex items-center gap-4 w-[240px] justify-end">
-                        <div className="hidden lg:flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg border-2 border-primary">
+                    <div className="flex items-center gap-3 w-[280px] justify-end">
+                        <a
+                            href="https://dexscreener.com/solana/8s98mky3u2f6pk5ny9m3x9xzvq6z3u9n9p2f"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hidden lg:flex items-center gap-2 px-3 py-2 bg-primary text-white rounded-lg border-2 border-primary hover:bg-primary/90 transition-all"
+                        >
                             <span className="material-symbols-outlined text-neon-green text-sm translate-y-[1px]">token</span>
-                            <span className="text-xs font-mono font-bold">$SOL: $142.65</span>
+                            <span className="text-[10px] font-mono font-bold">$SOL: $142.65</span>
+                        </a>
+
+                        <div className="flex items-center gap-2">
+                            <a
+                                href="https://t.me/dailycrowd"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="size-9 bg-white border-2 border-primary rounded-lg flex items-center justify-center hover:bg-neon-green transition-all shadow-[2px_2px_0px_0px_#141414] group"
+                                title="Join Telegram"
+                            >
+                                <span className="material-symbols-outlined text-lg">send</span>
+                            </a>
+                            <a
+                                href="https://x.com/dailycrowd"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="size-9 bg-white border-2 border-primary rounded-lg flex items-center justify-center hover:bg-neon-green transition-all shadow-[2px_2px_0px_0px_#141414] group"
+                                title="Follow on X"
+                            >
+                                <span className="flex items-center justify-center font-black text-sm">X</span>
+                            </a>
                         </div>
 
                         <div className="relative group">
-                            <div className={`flex items-center gap-2 px-6 py-2 rounded-lg font-black uppercase italic tracking-wider transition-all shadow-[4px_4px_0px_0px_#141414] border-2 border-primary
+                            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg font-black uppercase italic tracking-wider transition-all shadow-[4px_4px_0px_0px_#141414] border-2 border-primary
                                 ${connected ? 'bg-primary text-white hover:bg-primary/90' : 'bg-neon-green text-primary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'}`}>
-                                <span className="material-symbols-outlined">{connected ? 'account_balance_wallet' : 'wallet'}</span>
-                                <span className="text-sm">
+                                <span className="material-symbols-outlined text-sm">{connected ? 'account_balance_wallet' : 'wallet'}</span>
+                                <span className="text-[11px]">
                                     {connected && publicKey ? `${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}` : 'Connect'}
                                 </span>
                             </div>
@@ -541,9 +567,14 @@ export default function OracleTerminal() {
                                         </div>
                                     </div>
 
-                                    <button className="w-full py-3 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-colors">
+                                    <a
+                                        href={selectedToken ? `https://pump.fun/coin/${selectedToken.mint}` : '#'}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="w-full py-3 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-colors flex items-center justify-center"
+                                    >
                                         View Chart
-                                    </button>
+                                    </a>
                                 </div>
                             </div>
 

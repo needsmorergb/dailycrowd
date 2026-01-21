@@ -62,7 +62,14 @@ const Leaderboard = () => {
                                 </span>
                             </div>
                             <div className="col-span-6 sm:col-span-3 flex items-center gap-2 sm:gap-3">
-                                <span className="font-mono font-black text-primary group-hover:text-neon-purple transition-colors truncate">{user.wallet}</span>
+                                <a
+                                    href={`https://solscan.io/account/${user.wallet}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-mono font-black text-primary hover:text-neon-purple transition-colors truncate underline decoration-primary/10 underline-offset-4"
+                                >
+                                    {user.wallet}
+                                </a>
                                 {user.isHolder && (
                                     <div className="relative group/holder shrink-0">
                                         <span className="material-symbols-outlined text-[10px] text-neon-purple font-black cursor-help">stars</span>
