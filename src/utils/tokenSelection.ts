@@ -13,6 +13,7 @@ export interface TokenCandidate {
     bondingProgress?: number;
     price?: number;
     mcUsd?: number;
+    image?: string;
 }
 
 export interface SelectionAudit {

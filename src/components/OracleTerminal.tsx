@@ -527,15 +527,32 @@ export default function OracleTerminal() {
                                     <>
                                         <div className="flex justify-between items-start mb-6">
                                             <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white relative">
-                                                <div className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/20">
-                                                    <span className="material-symbols-outlined text-4xl">token</span>
-                                                </div>
+                                                {selectedToken?.image ? (
+                                                    <img
+                                                        src={selectedToken.image}
+                                                        alt={selectedToken.symbol}
+                                                        className="w-full h-full object-cover"
+                                                        onError={(e) => {
+                                                            // Fallback to Dexscreener if Pump.fun image fails
+                                                            (e.target as HTMLImageElement).src = `https://dd.dexscreener.com/ds-data/tokens/solana/${selectedToken.mint}.png`;
+                                                        }}
+                                                    />
+                                                ) : (
+                                                    <div className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/20">
+                                                        <span className="material-symbols-outlined text-4xl">token</span>
+                                                    </div>
+                                                )}
                                             </div>
                                             <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
                                         </div>
 
                                         <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
-                                        <p className="text-sm font-mono text-primary/60 mb-6 truncate">{selectedToken?.mint || 'Scanning chain...'}</p>
+                                        <div className="flex flex-col mb-6">
+                                            <p className="text-[9px] font-black uppercase text-primary/30 tracking-widest mb-1">Token Address</p>
+                                            <p className="text-[10px] font-mono text-primary/60 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
+                                                {selectedToken?.mint || 'Scanning chain...'}
+                                            </p>
+                                        </div>
                                     </>
                                 )}
 
@@ -577,9 +594,9 @@ export default function OracleTerminal() {
                                         href={selectedToken ? `https://pump.fun/coin/${selectedToken.mint}` : '#'}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="w-full py-3 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-colors flex items-center justify-center"
+                                        className="w-full py-4 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-all flex items-center justify-center shadow-[4px_4px_00px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
                                     >
-                                        View Chart
+                                        View Full Chart
                                     </a>
                                 </div>
                             </div>
