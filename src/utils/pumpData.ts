@@ -49,19 +49,19 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
     } catch (error) {
         console.error('PumpDataService Error:', error);
         return [{
-            mint: 'ED5nyvWEzpPPiWimPqSbiAtX77BnBszK3vLpge47Wpx',
-            symbol: 'MOODENG',
-            name: 'Moo Deng',
-            createdAt: Date.now() - 86400000,
-            vol5m: 1250,
-            trades5m: 450,
-            uniqueTraders5m: 120,
-            vol30m: 8500,
-            volatility5m: 0.85,
-            price: 0.0035,
-            mcUsd: 35000000,
+            mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump',
+            symbol: 'BILLY',
+            name: 'Billy',
+            createdAt: Date.now() - 86400000 * 30, // 30 days ago
+            vol5m: 4500,
+            trades5m: 1200,
+            uniqueTraders5m: 350,
+            vol30m: 12500,
+            volatility5m: 1.25,
+            price: 0.18,
+            mcUsd: 180000000,
             bondingProgress: 100,
-            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/ED5nyvWEzpPPiWimPqSbiAtX77BnBszK3vLpge47Wpx.png'
+            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
         }, {
             mint: 'HeLp6Nu64ecnAcSstL2S1RY9S4AsuHkyuB6YyEeg6pzt',
             symbol: 'AMERICA',
