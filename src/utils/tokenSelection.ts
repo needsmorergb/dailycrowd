@@ -31,7 +31,7 @@ export class TokenSelector {
     private usedMints: Set<string> = new Set();
 
     async selectTargetToken(roundId: string, snapshotTime: number, candidates: TokenCandidate[]): Promise<{ chosen: TokenCandidate; audit: SelectionAudit }> {
-        let pool = candidates;
+        const pool = candidates;
         let relaxations: string[] = [];
 
         // 1. Initial Filtering
@@ -93,8 +93,7 @@ export class TokenSelector {
     }
 
     private relaxFilters(pool: TokenCandidate[]): { pool: TokenCandidate[]; relaxations: string[] } {
-        let currentPool = pool;
-        let relaxations: string[] = [];
+        const relaxations: string[] = [];
 
         // Simplified relaxation for demo
         relaxations.push('lower_activity_thresholds');

@@ -2,7 +2,7 @@
 
 import { NextPage } from "next";
 import React, { useState, useEffect } from "react";
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import Leaderboard from './Leaderboard';
 import Docs from './Docs';
@@ -16,8 +16,13 @@ import { useHouseBonuses } from '../hooks/useHouseBonuses';
 import { TokenSelector, TokenCandidate } from '../utils/tokenSelection';
 import { TOKEN_SELECTION_CONFIG } from '../utils/tokenSelectionConfig';
 
+import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { fetchLatestPumpTokens } from '../utils/pumpData';
+
 const ANCHOR_HOUR = 17; // 5 PM
 const TIMEZONE = 'America/Los_Angeles';
+
+const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || 'TreasuryAddressGoesHere';
 
 const MIN_FEES = {
     RAPID: 0.03,
@@ -44,30 +49,79 @@ export default function OracleTerminal() {
     const { peakVwap, peakRoi, addTrade } = useVwapPeak(launchPrice, roundStartTime);
 
     // Token Selection State
+    const [candidates, setCandidates] = useState<TokenCandidate[]>([]);
     const [selectedToken, setSelectedToken] = useState<TokenCandidate | null>(null);
     const [isTokenLocked, setIsTokenLocked] = useState(false);
     const [showExplainer, setShowExplainer] = useState(false);
+    const [isLoadingTokens, setIsLoadingTokens] = useState(false);
 
-    // Holder Status (Mocked)
-    const [isTokenHolder] = useState(true); // Set to true for demo/testing
+    // Holder Status (Mocked for now, but ready for token check)
+    const [isTokenHolder] = useState(true);
     const [showHoldersView, setShowHoldersView] = useState(false);
 
     const selector = new TokenSelector();
 
-    const mockCandidates: TokenCandidate[] = [
-        { mint: 'Pump1...abc', symbol: 'MOON', name: 'MoonShot', createdAt: Date.now() - 1200000, vol5m: 120, trades5m: 450, uniqueTraders5m: 180, vol30m: 600, volatility5m: 1.2 },
-        { mint: 'Pump2...def', symbol: 'PEPE', name: 'PepeFun', createdAt: Date.now() - 3600000, vol5m: 80, trades5m: 300, uniqueTraders5m: 120, vol30m: 400, volatility5m: 0.8 },
-        { mint: 'Pump3...ghi', symbol: 'DOGE', name: 'DogeRound', createdAt: Date.now() - 500000, vol5m: 200, trades5m: 800, uniqueTraders5m: 350, vol30m: 900, volatility5m: 1.5 },
-    ];
-
     // Payout Simulation
     const { lastPayouts, isProcessing, simulatePayout } = usePayoutSimulation();
+
+    // Transaction States
+    const [txStatus, setTxStatus] = useState<'idle' | 'signing' | 'confirming' | 'success' | 'error'>('idle');
+    const [txHash, setTxHash] = useState<string | null>(null);
 
     // House Bonuses
     const { activeBonus, updateBonus } = useHouseBonuses();
 
     // Verification & History
     const [roundHistory, setRoundHistory] = useState<any[]>([]);
+
+    // Fetch Real Candidates
+    useEffect(() => {
+        const loadTokens = async () => {
+            setIsLoadingTokens(true);
+            const liveTokens = await fetchLatestPumpTokens();
+            if (liveTokens.length > 0) {
+                setCandidates(liveTokens);
+                // Auto-select first candidate if none selected
+                if (!selectedToken) {
+                    const { chosen } = await selector.selectTargetToken('initial', Date.now(), liveTokens);
+                    setSelectedToken(chosen);
+                }
+            }
+            setIsLoadingTokens(false);
+        };
+        loadTokens();
+    }, []);
+
+    const { connection } = useConnection();
+    const { publicKey, sendTransaction } = useWallet();
+
+    const handleLockIn = async () => {
+        if (!publicKey || !stakeAmount || parseFloat(stakeAmount) <= 0) return;
+
+        try {
+            setTxStatus('signing');
+            const transaction = new Transaction().add(
+                SystemProgram.transfer({
+                    fromPubkey: publicKey,
+                    toPubkey: new PublicKey(TREASURY_ADDRESS),
+                    lamports: parseFloat(stakeAmount) * LAMPORTS_PER_SOL,
+                })
+            );
+
+            const signature = await sendTransaction(transaction, connection);
+            setTxHash(signature);
+            setTxStatus('confirming');
+
+            const result = await connection.confirmTransaction(signature, 'processed');
+            setTxStatus('success');
+
+            // Re-simulate payout with real context eventually
+            // For now, just mark as entered
+        } catch (error) {
+            console.error('Transaction failed:', error);
+            setTxStatus('error');
+        }
+    };
 
     // Simulate Trades & Pot Growth
     useEffect(() => {
@@ -114,8 +168,8 @@ export default function OracleTerminal() {
             const diff = differenceInSeconds(targetTime, zonedNow);
 
             // Token Selection Timing (T_snapshot = start_time - 120s)
-            if (diff <= TOKEN_SELECTION_CONFIG.SNAPSHOT_BEFORE_START_SEC && !isTokenLocked) {
-                selector.selectTargetToken('round-123', Date.now(), mockCandidates).then(result => {
+            if (diff <= TOKEN_SELECTION_CONFIG.SNAPSHOT_BEFORE_START_SEC && !isTokenLocked && candidates.length > 0) {
+                selector.selectTargetToken('round-123', Date.now(), candidates).then(result => {
                     setSelectedToken(result.chosen);
                     setIsTokenLocked(true);
                 });
@@ -693,9 +747,51 @@ export default function OracleTerminal() {
                                     </div>
                                 </div>
 
-                                <button className="w-full py-4 bg-primary text-white text-lg font-black uppercase italic tracking-widest rounded-xl border-4 border-primary hover:bg-neon-green hover:text-primary hover:border-primary hover:shadow-[4px_4px_0px_0px_#141414] transition-all group relative overflow-hidden">
-                                    <span className="relative z-10 group-hover:mr-2 transition-all">Lock It In</span>
-                                    <span className="material-symbols-outlined align-middle text-sm absolute right-12 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">lock</span>
+                                {txStatus === 'success' && txHash && (
+                                    <div className="mb-4 p-3 bg-neon-green/10 border-2 border-neon-green/30 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                                        <span className="material-symbols-outlined text-neon-green">check_circle</span>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] font-black uppercase text-neon-green">Prediction Locked</p>
+                                            <a
+                                                href={`https://solscan.io/tx/${txHash}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[9px] font-mono text-primary/60 hover:underline"
+                                            >
+                                                {txHash.slice(0, 8)}...{txHash.slice(-8)}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {txStatus === 'error' && (
+                                    <div className="mb-4 p-3 bg-red-500/10 border-2 border-red-500/30 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
+                                        <span className="material-symbols-outlined text-red-500">error</span>
+                                        <p className="text-[10px] font-black uppercase text-red-500">Transaction Failed</p>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleLockIn}
+                                    disabled={!connected || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee}
+                                    className={`w-full py-4 text-white text-lg font-black uppercase italic tracking-widest rounded-xl border-4 border-primary transition-all group relative overflow-hidden
+                                        ${(!connected || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee)
+                                            ? 'bg-primary/40 cursor-not-allowed border-primary/10'
+                                            : 'bg-primary hover:bg-neon-green hover:text-primary hover:border-primary hover:shadow-[4px_4px_0px_0px_#141414]'}`}
+                                >
+                                    <span className="relative z-10 flex items-center justify-center gap-2">
+                                        {(txStatus === 'signing' || txStatus === 'confirming') ? (
+                                            <>
+                                                <span className="material-symbols-outlined animate-spin">sync</span>
+                                                {txStatus === 'signing' ? 'Signing...' : 'Confirming...'}
+                                            </>
+                                        ) : (
+                                            <>
+                                                <span className="group-hover:mr-2 transition-all">Lock It In</span>
+                                                <span className="material-symbols-outlined align-middle text-sm absolute right-12 opacity-0 group-hover:opacity-100 group-hover:right-8 transition-all">lock</span>
+                                            </>
+                                        )}
+                                    </span>
                                 </button>
 
                                 <div className="flex justify-between items-center mt-4 pt-4 border-t-2 border-dashed border-primary/20">
