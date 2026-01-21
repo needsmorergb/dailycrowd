@@ -597,7 +597,11 @@ export default function OracleTerminal() {
                                     </div>
 
                                     <a
-                                        href={selectedToken ? `https://pump.fun/coin/${selectedToken.mint}` : '#'}
+                                        href={selectedToken
+                                            ? (selectedToken.mint.endsWith('pump')
+                                                ? `https://pump.fun/coin/${selectedToken.mint}`
+                                                : `https://dexscreener.com/solana/${selectedToken.mint}`)
+                                            : '#'}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="w-full py-4 border-2 border-primary bg-primary text-white font-black uppercase italic tracking-widest hover:bg-neon-green hover:text-primary transition-all flex items-center justify-center shadow-[4px_4px_00px_0px_rgba(0,0,0,0.1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none"
