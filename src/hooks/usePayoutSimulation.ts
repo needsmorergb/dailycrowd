@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { PayoutEngine, Prediction, PayoutResult } from '../utils/payout';
 
 export function usePayoutSimulation() {
     const [lastPayouts, setLastPayouts] = useState<PayoutResult[]>([]);
     const [isProcessing, setIsProcessing] = useState(false);
-    const engine = new PayoutEngine();
+    const engine = useMemo(() => new PayoutEngine(), []);
 
     const simulatePayout = useCallback((totalPot: number, actualPeakRoi: number, currentPredictions: Prediction[]) => {
         setIsProcessing(true);
@@ -15,7 +15,7 @@ export function usePayoutSimulation() {
             setLastPayouts(results);
             setIsProcessing(false);
         }, 2000);
-    }, []);
+    }, [engine]);
 
     return { lastPayouts, isProcessing, simulatePayout };
 }

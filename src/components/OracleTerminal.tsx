@@ -1,6 +1,6 @@
 'use client';
 
-import { NextPage } from "next";
+import Image from "next/image";
 import React, { useState, useEffect } from "react";
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
@@ -15,6 +15,12 @@ import { usePayoutSimulation } from '../hooks/usePayoutSimulation';
 import { useHouseBonuses } from '../hooks/useHouseBonuses';
 import { TokenSelector, TokenCandidate } from '../utils/tokenSelection';
 import { TOKEN_SELECTION_CONFIG } from '../utils/tokenSelectionConfig';
+
+interface RoundHistoryItem {
+    roundTime: Date;
+    peakRoi: number;
+    potSol: number;
+}
 
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { fetchLatestPumpTokens } from '../utils/pumpData';
@@ -42,7 +48,7 @@ export default function OracleTerminal() {
     const [burnedTokens, setBurnedTokens] = useState<number>(1250);
 
     // Round Logic State
-    const [roundStartTime] = useState<number>(Date.now());
+    const [roundStartTime] = useState<number>(() => Date.now());
     const [launchPrice] = useState<number>(0.00001); // Simulated launch price
 
     // VWAP Tracking
@@ -59,7 +65,7 @@ export default function OracleTerminal() {
     const [isTokenHolder] = useState(true);
     const [showHoldersView, setShowHoldersView] = useState(false);
 
-    const selector = new TokenSelector();
+    const selector = React.useMemo(() => new TokenSelector(), []);
 
     // Payout Simulation
     const { lastPayouts, isProcessing, simulatePayout } = usePayoutSimulation();
@@ -72,7 +78,7 @@ export default function OracleTerminal() {
     const { activeBonus, updateBonus } = useHouseBonuses();
 
     // Verification & History
-    const [roundHistory, setRoundHistory] = useState<any[]>([]);
+    const [roundHistory] = useState<RoundHistoryItem[]>([]);
 
     // Fetch Real Candidates
     useEffect(() => {
@@ -90,7 +96,7 @@ export default function OracleTerminal() {
             setIsLoadingTokens(false);
         };
         loadTokens();
-    }, []);
+    }, [selectedToken, selector]);
 
     const { connection } = useConnection();
     const { publicKey, sendTransaction } = useWallet();
@@ -112,7 +118,7 @@ export default function OracleTerminal() {
             setTxHash(signature);
             setTxStatus('confirming');
 
-            const result = await connection.confirmTransaction(signature, 'processed');
+            await connection.confirmTransaction(signature, 'processed');
             setTxStatus('success');
 
             // Re-simulate payout with real context eventually
@@ -150,7 +156,7 @@ export default function OracleTerminal() {
             const zonedNow = toZonedTime(now, TIMEZONE);
 
             // Set Start Anchor: Today at 5:00 PM PST
-            let startAnchor = setSeconds(setMinutes(setHours(toZonedTime(new Date(), TIMEZONE), ANCHOR_HOUR), 0), 0);
+            const startAnchor = setSeconds(setMinutes(setHours(toZonedTime(new Date(), TIMEZONE), ANCHOR_HOUR), 0), 0);
 
             // If we are before the 5 PM anchor, the FIRST round ends at 5:00 PM
             let targetTime: Date;
@@ -419,8 +425,13 @@ export default function OracleTerminal() {
                                 ) : (
                                     <>
                                         <div className="flex justify-between items-start mb-6">
-                                            <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white">
-                                                <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXseSWT3F3PRp40BzMmD6YSbYJBR-crmVEEUw32I1EWRMr8yiRdImQJuDUbRXUrQn8T0X0I7GZgTovmF3KREDYdtZNe7YrFgJ83yplnzFMkA0LGTazEmH9hPcZ4Tt-HVBSBzd245mMomPOVcbBhqOZ2-denwRanQm_omUBsmw8aTWbXS0pQCcahUf_uel7v3Ujcq6mxy09VO_UOcETlQ16j6wxa4eLclMo7wXaF7goFQm2NAA0I3gjHQ0bVOcWv6tyGxhKOrRY5Cc" alt="Token" className="w-full h-full object-cover" />
+                                            <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white relative">
+                                                <Image
+                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXseSWT3F3PRp40BzMmD6YSbYJBR-crmVEEUw32I1EWRMr8yiRdImQJuDUbRXUrQn8T0X0I7GZgTovmF3KREDYdtZNe7YrFgJ83yplnzFMkA0LGTazEmH9hPcZ4Tt-HVBSBzd245mMomPOVcbBhqOZ2-denwRanQm_omUBsmw8aTWbXS0pQCcahUf_uel7v3Ujcq6mxy09VO_UOcETlQ16j6wxa4eLclMo7wXaF7goFQm2NAA0I3gjHQ0bVOcWv6tyGxhKOrRY5Cc"
+                                                    alt="Token"
+                                                    fill
+                                                    className="object-cover"
+                                                />
                                             </div>
                                             <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
                                         </div>
@@ -535,8 +546,16 @@ export default function OracleTerminal() {
                                     <h2 className="text-5xl md:text-6xl font-black italic uppercase tracking-tighter leading-none mb-4">
                                         Forecast<br />The Peak
                                     </h2>
+                                    <div className="flex items-center gap-4 mb-2">
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-primary/5 rounded-full border border-primary/10">
+                                            <div className={`w-2 h-2 rounded-full ${isLoadingTokens ? 'bg-primary/20 animate-pulse' : 'bg-neon-green'}`}></div>
+                                            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                                                {isLoadingTokens ? 'Scanning Pump.fun...' : 'Live Protocol Feed'}
+                                            </span>
+                                        </div>
+                                    </div>
                                     <p className="text-[10px] font-black uppercase tracking-widest text-primary/40 mb-2">
-                                        New rounds start every 30m • Featured rounds every few hours • Daily anchor at 5 PM PST
+                                        New rounds start every 30m &bull; Featured rounds every few hours &bull; Daily anchor at 5 PM PST
                                     </p>
                                     <div className="relative group mb-8">
                                         <p className="text-primary/60 font-medium max-w-md mx-auto cursor-help border-b border-dashed border-primary/20">
@@ -677,7 +696,7 @@ export default function OracleTerminal() {
                                 {currentRoundType === 'ANCHOR' && (
                                     <div className="mb-6 p-4 bg-primary/5 rounded-xl border-2 border-dashed border-primary/10">
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[10px] font-bold uppercase text-primary/40">Today's Median</span>
+                                            <span className="text-[10px] font-bold uppercase text-primary/40">Today&apos;s Median</span>
                                             <span className="text-xs font-black uppercase tracking-widest text-primary">14.2x ROI</span>
                                         </div>
                                         <div className="flex justify-between items-center">
@@ -896,7 +915,7 @@ export default function OracleTerminal() {
                             <div className="flex gap-6 items-start">
                                 <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">02</div>
                                 <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
-                                    We exclude recently used tokens and apply age filters (5m to 6h) to ensure we target high-velocity "fresh" hype.
+                                    We exclude recently used tokens and apply age filters (5m to 6h) to ensure we target high-velocity &quot;fresh&quot; hype.
                                 </p>
                             </div>
                             <div className="flex gap-6 items-start">

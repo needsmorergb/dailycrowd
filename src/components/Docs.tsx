@@ -9,7 +9,7 @@ const Docs = () => {
                 <>
                     <p className="mb-4">CROWD Oracle is a competitive game where players predict how intense market hype will get — not which direction price moves.</p>
                     <div className="p-4 bg-primary text-neon-green rounded-lg italic font-bold border-2 border-primary shadow-[4px_4px_0px_0px_rgba(204,255,0,1)]">
-                        "You are not trading. You are forecasting collective behavior."
+                        &quot;You are not trading. You are forecasting collective behavior.&quot;
                     </div>
                 </>
             )

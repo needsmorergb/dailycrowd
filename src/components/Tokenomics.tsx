@@ -78,7 +78,7 @@ const Tokenomics = () => {
                         <div className="bg-primary border-4 border-primary rounded-3xl p-8 text-white">
                             <h3 className="text-xl font-black uppercase tracking-widest mb-6 text-neon-green">Trust Guardrails</h3>
                             <div className="mb-4 p-4 bg-white/5 rounded-xl text-[10px] italic text-neon-purple leading-relaxed">
-                                "Holding $CROWD unlocks better information and recognition. Accuracy still decides winners."
+                                &quot;Holding $CROWD unlocks better information and recognition. Accuracy still decides winners.&quot;
                             </div>
                             <ul className="space-y-4">
                                 {[
