@@ -37,7 +37,8 @@ const MIN_FEES = {
 };
 
 export default function OracleTerminal() {
-    const { connected } = useWallet();
+    const { connected, publicKey, sendTransaction } = useWallet();
+    const { connection } = useConnection();
     const [prediction, setPrediction] = useState<number>(15.0);
     const [stakeAmount, setStakeAmount] = useState<string>('');
     const [timeLeft, setTimeLeft] = useState<{ hours: string, minutes: string, seconds: string }>({ hours: '00', minutes: '00', seconds: '00' });
@@ -98,8 +99,7 @@ export default function OracleTerminal() {
         loadTokens();
     }, [selectedToken, selector]);
 
-    const { connection } = useConnection();
-    const { publicKey, sendTransaction } = useWallet();
+
 
     const handleLockIn = async () => {
         if (!publicKey || !stakeAmount || parseFloat(stakeAmount) <= 0) return;
@@ -288,14 +288,17 @@ export default function OracleTerminal() {
                             <span className="text-xs font-mono font-bold">$SOL: $142.65</span>
                         </div>
 
-                        <div className="relative">
-                            <div className="flex items-center gap-2 px-6 py-2 bg-neon-green text-primary border-2 border-primary rounded-lg font-black uppercase italic tracking-wider hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none transition-all shadow-[4px_4px_0px_0px_#141414] cursor-pointer">
-                                <span className="material-symbols-outlined">wallet</span>
-                                <span className="text-sm">Connect</span>
+                        <div className="relative group">
+                            <div className={`flex items-center gap-2 px-6 py-2 rounded-lg font-black uppercase italic tracking-wider transition-all shadow-[4px_4px_0px_0px_#141414] border-2 border-primary
+                                ${connected ? 'bg-primary text-white hover:bg-primary/90' : 'bg-neon-green text-primary hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none'}`}>
+                                <span className="material-symbols-outlined">{connected ? 'account_balance_wallet' : 'wallet'}</span>
+                                <span className="text-sm">
+                                    {connected && publicKey ? `${publicKey.toBase58().slice(0, 4)}...${publicKey.toBase58().slice(-4)}` : 'Connect'}
+                                </span>
                             </div>
                             {/* Invisible Wallet Adapter Button Overlay */}
-                            <div className="absolute inset-0 opacity-0 cursor-pointer">
-                                <WalletMultiButton />
+                            <div className="absolute inset-0 opacity-0 cursor-pointer overflow-hidden rounded-lg">
+                                <WalletMultiButton className="!w-full !h-full !bg-transparent !p-0 !m-0 !border-none !text-[0px]" />
                             </div>
                         </div>
                     </div>
