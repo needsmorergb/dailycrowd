@@ -49,33 +49,33 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
     } catch (error) {
         console.error('PumpDataService Error:', error);
         return [{
-            mint: 'So11111111111111111111111111111111111111112',
-            symbol: 'SOL',
-            name: 'Solana',
-            createdAt: Date.now(),
+            mint: 'ED5nyvWEzpPPiWimPqSbiAtX77BnBszK3vLpge47Wpx',
+            symbol: 'MOODENG',
+            name: 'Moo Deng',
+            createdAt: Date.now() - 86400000,
             vol5m: 1250,
             trades5m: 450,
             uniqueTraders5m: 120,
             vol30m: 8500,
             volatility5m: 0.85,
-            price: 156.42,
-            mcUsd: 72000000000,
+            price: 0.0035,
+            mcUsd: 35000000,
             bondingProgress: 100,
-            image: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png'
+            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/ED5nyvWEzpPPiWimPqSbiAtX77BnBszK3vLpge47Wpx.png'
         }, {
-            mint: 'DezXAZ8z7Pnrn9wvXbtDHXcnfUV91AfY1SHe2dfn99vR',
-            symbol: 'BONK',
-            name: 'Bonk',
-            createdAt: Date.now(),
+            mint: 'HeLp6Nu64ecnAcSstL2S1RY9S4AsuHkyuB6YyEeg6pzt',
+            symbol: 'AMERICA',
+            name: 'America',
+            createdAt: Date.now() - 3600000,
             vol5m: 500,
             trades5m: 150,
             uniqueTraders5m: 45,
             vol30m: 2100,
             volatility5m: 1.45,
-            price: 0.000025,
-            mcUsd: 1500000000,
-            bondingProgress: 100,
-            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/DezXAZ8z7Pnrn9wvXbtDHXcnfUV91AfY1SHe2dfn99vR.png'
+            price: 0.00001,
+            mcUsd: 10000,
+            bondingProgress: 15,
+            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/HeLp6Nu64ecnAcSstL2S1RY9S4AsuHkyuB6YyEeg6pzt.png'
         }];
     }
 }
