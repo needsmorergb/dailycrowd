@@ -53,50 +53,71 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
 
 async function fetchFallbackTokens(): Promise<TokenCandidate[]> {
     try {
-        // Fetch data for fallback tokens (Billy, America, Bonk, USD1) from Dexscreener
-        const fallbackMints = [
-            '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump', // Billy
-            'HeLp6Nu64ecnAcSstL2S1RY9S4AsuHkyuB6YyEeg6pzt', // America
-            'DezXAZ8z7Pnrn9wvXbtDHXcnfUV91AfY1SHe2dfn99vR', // Bonk
-            'USD1ttGY1N17NEEHLmELoaybftRBUSErhqYiQzvEmuB', // USD1
-            // 'BAGS' token mint to be verified
-        ];
+        console.log('Fetching dynamic ecosystem tokens...');
 
-        const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${fallbackMints.join(',')}`);
+        // Search queries for ecosystems requested by user (including Pump)
+        const queries = ['Pump', 'Bonk', 'Bags', 'WLFI', 'USD1'];
 
-        if (!response.ok) throw new Error('Dexscreener fallback failed');
+        // Parallel fetch for all search queries
+        const results = await Promise.all(
+            queries.map(q =>
+                fetch(`https://api.dexscreener.com/latest/dex/search/?q=${q}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(err => null)
+            )
+        );
 
-        const data = await response.json();
-        if (!data.pairs || data.pairs.length === 0) throw new Error('No pairs found on Dexscreener');
+        const candidates: TokenCandidate[] = [];
+        const seenMints = new Set<string>();
 
-        // Group pairs by mint to find the best pair (highest liquidity) for each token
-        const bestPairs = fallbackMints.map(mint => {
-            const tokenPairs = data.pairs.filter((p: any) => p.baseToken.address === mint);
-            // Sort by liquidity USD descending
-            return tokenPairs.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0))[0];
-        }).filter(pair => pair !== undefined);
+        // Process results from all queries
+        results.forEach(data => {
+            if (!data || !data.pairs) return;
 
-        return bestPairs.map((pair: any) => ({
-            mint: pair.baseToken.address,
-            symbol: pair.baseToken.symbol,
-            name: pair.baseToken.name,
-            createdAt: pair.pairCreatedAt || Date.now(),
-            vol5m: pair.volume?.m5 || 0,
-            trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
-            uniqueTraders5m: 0, // Dexscreener doesn't provide this easily in this endpoint
-            vol30m: (pair.volume?.m5 || 0) * 6, // Estimate
-            volatility5m: Math.abs(pair.priceChange?.m5 || 0),
-            price: parseFloat(pair.priceUsd || '0'),
-            mcUsd: pair.marketCap || pair.fdv || 0,
-            bondingProgress: 100, // Assumed graduated for these established tokens
-            image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
-        }));
+            // Filter for Solana pairs with decent liquidity/volume
+            const validPairs = data.pairs.filter((p: any) =>
+                p.chainId === 'solana' &&
+                p.liquidity?.usd > 10000 &&
+                p.volume?.h24 > 50000 &&
+                p.baseToken?.address
+            );
+
+            validPairs.forEach((pair: any) => {
+                if (seenMints.has(pair.baseToken.address)) return;
+
+                seenMints.add(pair.baseToken.address);
+                candidates.push({
+                    mint: pair.baseToken.address,
+                    symbol: pair.baseToken.symbol,
+                    name: pair.baseToken.name,
+                    createdAt: pair.pairCreatedAt || Date.now(),
+                    vol5m: pair.volume?.m5 || 0,
+                    trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
+                    uniqueTraders5m: 0,
+                    vol30m: (pair.volume?.m5 || 0) * 6,
+                    volatility5m: Math.abs(pair.priceChange?.m5 || 0),
+                    price: parseFloat(pair.priceUsd || '0'),
+                    mcUsd: pair.marketCap || pair.fdv || 0,
+                    bondingProgress: 100,
+                    image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
+                });
+            });
+        });
+
+        // If dynamic fetch yields results, return them (random selection happens downstream)
+        if (candidates.length > 0) {
+            // Sort by 24h volume to ensure quality
+            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
+        }
+
+        throw new Error('No dynamic candidates found');
 
     } catch (error) {
-        console.error('Fallback Data Error:', error);
-        // Final safety net if both APIs fail - prevent crash but acknowledge data is stale
+        console.error('Dynamic Fallback Error:', error);
+
+        // Static "Disaster Recovery" list if even Dexscreener search fails
         return [{
-            mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump',
+            mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump', // Billy
             symbol: 'BILLY',
             name: 'Billy',
             createdAt: Date.now(),
@@ -106,7 +127,7 @@ async function fetchFallbackTokens(): Promise<TokenCandidate[]> {
             vol30m: 50000,
             volatility5m: 2.5,
             price: 0.02,
-            mcUsd: 20000000, // More realistic ~20M
+            mcUsd: 20000000,
             bondingProgress: 100,
             image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
         }];
