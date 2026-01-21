@@ -344,6 +344,12 @@ export default function OracleTerminal() {
                             >
                                 Docs
                             </button>
+                            <a
+                                href="/rules"
+                                className="font-bold text-xs uppercase tracking-wider text-primary/40 hover:text-primary transition-colors"
+                            >
+                                Rules
+                            </a>
                         </nav>
                     </div>
 

@@ -30,6 +30,8 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
 
         const data: PumpTokenApiResponse[] = await response.json();
 
+        if (!data || data.length === 0) throw new Error('Empty response from Pump.fun');
+
         return data.map(coin => ({
             mint: coin.mint,
             symbol: coin.symbol,
