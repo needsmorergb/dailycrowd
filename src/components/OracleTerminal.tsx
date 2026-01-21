@@ -505,7 +505,7 @@ export default function OracleTerminal() {
                         {/* Left Column (3 Spans) - Market Reality Layer (COLD) */}
                         <div className="col-span-12 lg:col-span-3 flex flex-col gap-4 lg:order-1 order-2">
                             <div className="flex flex-col gap-3 ml-2">
-                                <div className="text-[10px] font-black uppercase text-primary/30 tracking-[0.3em]">Market Reality Layer</div>
+                                <div className="text-[10px] font-black uppercase text-primary/50 tracking-[0.3em]">Market Reality Layer</div>
                                 <div className="h-[2px] w-12 bg-primary/10"></div>
                             </div>
                             {/* Live Asset Card - COLD STYLING */}
@@ -548,8 +548,8 @@ export default function OracleTerminal() {
 
                                         <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
                                         <div className="flex flex-col mb-6">
-                                            <p className="text-[9px] font-black uppercase text-primary/30 tracking-widest mb-1">Token Address</p>
-                                            <p className="text-[10px] font-mono text-primary/60 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
+                                            <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mb-1">Token Address</p>
+                                            <p className="text-[10px] font-mono text-primary/70 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
                                                 {selectedToken?.mint || 'Scanning chain...'}
                                             </p>
                                         </div>
@@ -571,19 +571,25 @@ export default function OracleTerminal() {
 
                                     <div className="grid grid-cols-2 gap-4 py-4 border-t-2 border-dashed border-primary/20">
                                         <div>
-                                            <p className="text-[10px] font-black uppercase text-primary/40">Market Cap</p>
-                                            <p className="font-mono font-bold">${selectedToken?.mcUsd ? (selectedToken.mcUsd / 1000).toFixed(1) + 'K' : '$1.24M'}</p>
+                                            <p className="text-[10px] font-black uppercase text-primary/60">Market Cap</p>
+                                            <p className="font-mono font-bold text-primary">
+                                                ${selectedToken?.mcUsd
+                                                    ? selectedToken.mcUsd >= 1000000
+                                                        ? (selectedToken.mcUsd / 1000000).toFixed(1) + 'M'
+                                                        : (selectedToken.mcUsd / 1000).toFixed(1) + 'K'
+                                                    : '$1.24M'}
+                                            </p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black uppercase text-primary/40">Current ROI</p>
+                                            <p className="text-[10px] font-black uppercase text-primary/60">Current ROI</p>
                                             <p className="font-mono font-bold text-neon-purple">{(peakVwap / (launchPrice || 1)).toFixed(1)}x</p>
                                         </div>
                                     </div>
 
                                     <div className="p-3 bg-primary/5 rounded-lg border-2 border-primary/10 mb-4">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-[10px] font-black uppercase text-primary/40">VWAP Peak (30s)</span>
-                                            <span className="font-mono font-bold text-xs">{peakRoi.toFixed(2)}x</span>
+                                            <span className="text-[10px] font-black uppercase text-primary/60">VWAP Peak (30s)</span>
+                                            <span className="font-mono font-bold text-xs text-primary">{peakRoi.toFixed(2)}x</span>
                                         </div>
                                         <div className="mt-1 h-1 w-full bg-primary/10 rounded-full overflow-hidden">
                                             <div className="h-full bg-neon-green" style={{ width: `${Math.min(100, (peakRoi / 30) * 100)}%` }}></div>
