@@ -20,6 +20,10 @@ interface RoundHistoryItem {
     roundTime: Date;
     peakRoi: number;
     potSol: number;
+    volatility5m: number;
+    bondingProgress?: number;
+    price?: number;
+    mcUsd?: number;
 }
 
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
@@ -50,7 +54,19 @@ export default function OracleTerminal() {
 
     // Round Logic State
     const [roundStartTime] = useState<number>(() => Date.now());
-    const [launchPrice] = useState<number>(0.00001); // Simulated launch price
+    const [launchPrice, setLaunchPrice] = useState<number>(0);
+
+    // Initialize simulation state on mount to avoid hydration mismatch
+    useEffect(() => {
+        setPotSol(1.36);
+        setBurnedTokens(1250);
+    }, []);
+    // Simulation: Community Predictions
+    const [cmPredictions, setCmPredictions] = useState<{ user: string, roi: string, color: string }[]>([
+        { user: 'G8Xp...m2K', roi: '12.5x', color: 'text-neon-green' },
+        { user: 'Ar4z...L9q', roi: '2.1x', color: 'text-neon-purple' },
+        { user: '2Wnn...o0X', roi: '28.0x', color: 'text-neon-green' },
+    ]);
 
     // VWAP Tracking
     const { peakVwap, peakRoi, addTrade } = useVwapPeak(launchPrice, roundStartTime);
@@ -92,6 +108,8 @@ export default function OracleTerminal() {
                 if (!selectedToken) {
                     const { chosen } = await selector.selectTargetToken('initial', Date.now(), liveTokens);
                     setSelectedToken(chosen);
+                    // Use a slightly lower price as "launch" to simulate immediate ROI
+                    setLaunchPrice((chosen.price || 0.00001) * 0.95);
                 }
             }
             setIsLoadingTokens(false);
@@ -132,23 +150,37 @@ export default function OracleTerminal() {
     // Simulate Trades & Pot Growth
     useEffect(() => {
         const interval = setInterval(() => {
-            // Simulate Pot/Burn
-            if (Math.random() > 0.9) {
-                setPotSol(prev => prev + 0.024);
-                setBurnedTokens(prev => prev + 15);
+            // 1. Simulate Pot/Burn from "other players"
+            if (Math.random() > 0.92) {
+                const entrySize = Math.random() * 0.5 + 0.03;
+                setPotSol(prev => prev + (entrySize * 0.8));
+                setBurnedTokens(prev => prev + Math.floor(Math.random() * 50 + 10));
+
+                // Add a new community pick occasionally
+                const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz123456789';
+                const user = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('') + '...' +
+                    Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+                const randRoi = (Math.random() * 25 + 1).toFixed(1) + 'x';
+
+                setCmPredictions(prev => [{
+                    user,
+                    roi: randRoi,
+                    color: parseFloat(randRoi) > 10 ? 'text-neon-green' : 'text-neon-purple'
+                }, ...prev.slice(0, 4)]);
             }
 
-            // Simulate Trades (Market Reality Layer)
-            if (Math.random() > 0.7) {
-                const volatility = 1 + (Math.random() * 0.4 - 0.2); // +/- 20%
+            // 2. Simulate Market Activity using token volatility
+            if (activeBonus) { // Just a heartbeat check
+                const tokenVol = selectedToken?.volatility5m || 0.5;
+                const movement = (Math.random() * 0.2 - 0.1) * tokenVol; // Scaled by token vol
                 const lastPrice = peakVwap || launchPrice;
-                const newPrice = lastPrice * volatility;
-                const volume = Math.random() * 1000 + 100;
+                const newPrice = lastPrice * (1 + movement);
+                const volume = Math.random() * 5000 + 500;
                 addTrade(newPrice, volume);
             }
-        }, 1000);
+        }, 2000);
         return () => clearInterval(interval);
-    }, [peakVwap, launchPrice, addTrade]);
+    }, [peakVwap, launchPrice, addTrade, selectedToken, activeBonus]);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -429,18 +461,15 @@ export default function OracleTerminal() {
                                     <>
                                         <div className="flex justify-between items-start mb-6">
                                             <div className="size-16 rounded-sm border border-primary/10 overflow-hidden bg-white relative">
-                                                <Image
-                                                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAXseSWT3F3PRp40BzMmD6YSbYJBR-crmVEEUw32I1EWRMr8yiRdImQJuDUbRXUrQn8T0X0I7GZgTovmF3KREDYdtZNe7YrFgJ83yplnzFMkA0LGTazEmH9hPcZ4Tt-HVBSBzd245mMomPOVcbBhqOZ2-denwRanQm_omUBsmw8aTWbXS0pQCcahUf_uel7v3Ujcq6mxy09VO_UOcETlQ16j6wxa4eLclMo7wXaF7goFQm2NAA0I3gjHQ0bVOcWv6tyGxhKOrRY5Cc"
-                                                    alt="Token"
-                                                    fill
-                                                    className="object-cover"
-                                                />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-primary/5 text-primary/20">
+                                                    <span className="material-symbols-outlined text-4xl">token</span>
+                                                </div>
                                             </div>
                                             <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
                                         </div>
 
-                                        <h3 className="text-3xl font-black italic uppercase leading-none mb-1">$PEPE3</h3>
-                                        <p className="text-sm font-mono text-primary/60 mb-6 truncate">0xPepe...3vSol</p>
+                                        <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
+                                        <p className="text-sm font-mono text-primary/60 mb-6 truncate">{selectedToken?.mint || 'Scanning chain...'}</p>
                                     </>
                                 )}
 
@@ -448,10 +477,10 @@ export default function OracleTerminal() {
                                     <div>
                                         <div className="flex justify-between text-xs font-bold uppercase mb-1">
                                             <span>Bonding</span>
-                                            <span>88%</span>
+                                            <span>{Math.min(99, Math.floor(selectedToken?.bondingProgress || 45))}%</span>
                                         </div>
                                         <div className="h-4 w-full bg-primary/10 rounded-full border-2 border-primary overflow-hidden">
-                                            <div className="h-full bg-neon-purple w-[88%] relative">
+                                            <div className="h-full bg-neon-purple relative" style={{ width: `${Math.min(99, selectedToken?.bondingProgress || 45)}%` }}>
                                                 <div className="absolute right-0 top-0 bottom-0 w-1 bg-white"></div>
                                             </div>
                                         </div>
@@ -460,11 +489,11 @@ export default function OracleTerminal() {
                                     <div className="grid grid-cols-2 gap-4 py-4 border-t-2 border-dashed border-primary/20">
                                         <div>
                                             <p className="text-[10px] font-black uppercase text-primary/40">Market Cap</p>
-                                            <p className="font-mono font-bold">$1.24M</p>
+                                            <p className="font-mono font-bold">${selectedToken?.mcUsd ? (selectedToken.mcUsd / 1000).toFixed(1) + 'K' : '$1.24M'}</p>
                                         </div>
                                         <div>
                                             <p className="text-[10px] font-black uppercase text-primary/40">Current ROI</p>
-                                            <p className="font-mono font-bold text-neon-purple">{(peakVwap / launchPrice).toFixed(1)}x</p>
+                                            <p className="font-mono font-bold text-neon-purple">{(peakVwap / (launchPrice || 1)).toFixed(1)}x</p>
                                         </div>
                                     </div>
 
@@ -491,11 +520,7 @@ export default function OracleTerminal() {
                                     <h4 className="font-black italic uppercase tracking-wider text-sm">Community Picks</h4>
                                 </div>
                                 <div className="space-y-3">
-                                    {[
-                                        { user: 'G8Xp...m2K', roi: '12.5x', color: 'text-neon-green' },
-                                        { user: 'Ar4z...L9q', roi: '2.1x', color: 'text-neon-purple' },
-                                        { user: '2Wnn...o0X', roi: '28.0x', color: 'text-neon-green' },
-                                    ].map((item, i) => (
+                                    {cmPredictions.map((item, i) => (
                                         <div key={i} className="flex justify-between font-mono text-xs border-b border-white/10 pb-2">
                                             <span className="text-white/60">{item.user}</span>
                                             <span className={`font-bold ${item.color}`}>{item.roi}</span>

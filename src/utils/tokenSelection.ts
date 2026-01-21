@@ -11,6 +11,8 @@ export interface TokenCandidate {
     vol30m: number;
     volatility5m: number;
     bondingProgress?: number;
+    price?: number;
+    mcUsd?: number;
 }
 
 export interface SelectionAudit {
