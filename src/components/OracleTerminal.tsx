@@ -142,7 +142,7 @@ export default function OracleTerminal() {
             setIsLoadingTokens(false);
         };
         loadTokens();
-    }, [selectedToken, selector]);
+    }, [selector]);
 
 
 
