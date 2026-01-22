@@ -27,7 +27,7 @@ interface RoundHistoryItem {
 }
 
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { fetchLatestPumpTokens } from '../utils/pumpData';
+import { fetchLatestPumpTokens, fetchTokenDetails } from '../utils/pumpData';
 
 const ANCHOR_HOUR = 17; // 5 PM
 const TIMEZONE = 'America/Los_Angeles';
@@ -81,7 +81,7 @@ export default function OracleTerminal() {
     const [burnedTokens, setBurnedTokens] = useState<number>(1250);
 
     // Round Logic State
-    const [roundStartTime] = useState<number>(() => Date.now());
+    const [roundStartTime, setRoundStartTime] = useState<number>(() => Date.now());
     const [launchPrice, setLaunchPrice] = useState<number>(0);
     const [currentPrice, setCurrentPrice] = useState<number>(0);
 
@@ -227,6 +227,23 @@ export default function OracleTerminal() {
     }, [selector]);
 
 
+
+    // Live Polling for Selected Token
+    useEffect(() => {
+        if (!selectedToken || roundState !== 'ACTIVE') return;
+
+        const pollInterval = setInterval(async () => {
+            const freshData = await fetchTokenDetails(selectedToken.mint);
+            if (freshData) {
+                setSelectedToken(prev => prev ? { ...prev, ...freshData } : null);
+                if (freshData.price) {
+                    setCurrentPrice(freshData.price);
+                }
+            }
+        }, 10000); // Poll every 10s
+
+        return () => clearInterval(pollInterval);
+    }, [selectedToken?.mint, roundState]);
 
     const handleLockIn = async () => {
         if (!stakeAmount || parseFloat(stakeAmount) <= 0) return;
@@ -405,6 +422,8 @@ export default function OracleTerminal() {
                 updateBonus(roundType);
 
                 setPotSol(1.0);
+                setRoundStartTime(Date.now());
+                setIsTokenLocked(false);
                 return { hours: '00', minutes: '00', seconds: '00' };
             }
 
@@ -761,7 +780,9 @@ export default function OracleTerminal() {
                                                     <span className="px-3 py-1 bg-neon-green border-2 border-primary rounded-full text-xs font-black uppercase italic">Live</span>
                                                 </div>
 
-                                                <h3 className="text-3xl font-black italic uppercase leading-none mb-1">${selectedToken?.symbol || 'SEARCHING...'}</h3>
+                                                <h3 className="text-3xl font-black italic uppercase leading-none mb-1">
+                                                    {selectedToken?.symbol || 'SEARCHING...'}
+                                                </h3>
                                                 <div className="flex flex-col mb-6">
                                                     <p className="text-[9px] font-black uppercase text-primary/50 tracking-widest mb-1">Token Address</p>
                                                     <p className="text-[10px] font-mono text-primary/70 break-all leading-tight bg-primary/5 p-2 rounded border border-primary/5 select-all">
@@ -788,10 +809,10 @@ export default function OracleTerminal() {
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase text-primary/60">Market Cap</p>
                                                     <p className="font-mono font-bold text-primary">
-                                                        ${selectedToken?.mcUsd
-                                                            ? selectedToken.mcUsd >= 1000000
-                                                                ? (selectedToken.mcUsd / 1000000).toFixed(1) + 'M'
-                                                                : (selectedToken.mcUsd / 1000).toFixed(1) + 'K'
+                                                        {selectedToken?.mcUsd
+                                                            ? (selectedToken.mcUsd >= 1000000
+                                                                ? '$' + (selectedToken.mcUsd / 1000000).toFixed(1) + 'M'
+                                                                : '$' + (selectedToken.mcUsd / 1000).toFixed(1) + 'K')
                                                             : '$1.24M'}
                                                     </p>
                                                 </div>

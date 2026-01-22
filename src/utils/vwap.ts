@@ -79,7 +79,16 @@ export class VwapTracker {
     }
 
     getPeakRoi(): number {
-        if (!this.launchPrice || this.peakVwap === 0) return 0;
+        if (!this.launchPrice) return 0;
+
+        // If we haven't completed a single 30s bucket yet, return the highest instant ROI seen.
+        // This prevents the UI from being stuck at 0.00x during the first 30s of a round.
+        if (this.peakVwap === 0 && this.trades.length > 0) {
+            const maxInstantPrice = Math.max(...this.trades.map(t => t.price));
+            return maxInstantPrice / this.launchPrice;
+        }
+
+        if (this.peakVwap === 0) return 0;
         return this.peakVwap / this.launchPrice;
     }
 

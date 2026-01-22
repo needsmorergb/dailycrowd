@@ -111,22 +111,27 @@ async function fetchFromDexSource(source: string): Promise<TokenCandidate[]> {
                 return !EXCLUDED_SYMBOLS.includes(symbol) && (p.baseToken?.address || p.mint || p.tokenAddress);
             })
             .map((p: any) => {
-                const mint = p.baseToken?.address || p.mint || p.tokenAddress;
-                const marketCap = p.marketCap || p.fdv || 0;
+                const mint = p.baseToken?.address || p.mint || p.tokenAddress || p.address;
+                const mcUsd = p.marketCap || p.fdv || 0;
+                const symbol = p.baseToken?.symbol || p.symbol || p.tokenSymbol || '???';
+                const isPump = mint.endsWith('pump');
+                let bondingProgress = isPump ? (mcUsd / 69000) * 100 : 100;
+                if (bondingProgress > 100) bondingProgress = 100;
+
                 return {
                     mint,
-                    symbol: p.baseToken?.symbol || p.symbol || '???',
-                    name: p.baseToken?.name || p.name || 'Unknown',
+                    symbol,
+                    name: p.baseToken?.name || p.name || p.tokenName || 'Unknown',
                     createdAt: p.pairCreatedAt || p.tokenCreated_at || Date.now() - (12 * 60 * 60 * 1000),
                     vol5m: p.volume?.m5 || p.volume_5m || 0,
                     trades5m: (p.txns?.m5?.buys || 0) + (p.txns?.m5?.sells || 0) || p.total_trades_5m || 0,
                     uniqueTraders5m: 0,
                     vol30m: (p.volume?.h1 || 0) / 2 || 0,
-                    volatility5m: Math.abs(p.priceChange?.m5 || 1.0),
-                    price: parseFloat(p.priceUsd || p.price || '0'),
-                    mcUsd: marketCap,
-                    bondingProgress: 100,
-                    image: p.info?.imageUrl || p.image_uri || p.icon || `https://dd.dexscreener.com/ds-data/tokens/solana/${mint}.png`
+                    volatility5m: Math.abs(p.priceChange?.m5 || 1.0) || 1.0,
+                    price: parseFloat(p.priceUsd || p.price || (mcUsd / 1000000000).toString()),
+                    mcUsd,
+                    bondingProgress,
+                    image: p.info?.imageUrl || p.image_uri || p.icon || p.image || `https://dd.dexscreener.com/ds-data/tokens/solana/${mint}.png`
                 };
             });
     } catch (e) {
@@ -140,28 +145,67 @@ async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
         if (!response.ok) return [];
 
         const data: PumpTokenApiResponse[] = await response.json();
-        const now = Date.now();
 
         // Tiered filter for Pump.fun too
-        const candidates = data.map(coin => ({
-            mint: coin.mint,
-            symbol: coin.symbol,
-            name: coin.name,
-            createdAt: coin.created_timestamp,
-            vol5m: coin.volume_5m || 0,
-            trades5m: coin.total_trades_5m || 0,
-            uniqueTraders5m: coin.unique_traders_5m || 0,
-            vol30m: coin.volume_30m || 0,
-            volatility5m: coin.volatility_5m || 1.5,
-            price: coin.usd_market_cap / 1000000000,
-            mcUsd: coin.usd_market_cap,
-            bondingProgress: coin.complete ? 100 : (coin.bonding_curve_percentage ?? Math.min(100, (coin.usd_market_cap / 69000) * 100)),
-            image: coin.image_uri || `https://dd.dexscreener.com/ds-data/tokens/solana/${coin.mint}.png`
-        }));
+        return data.map(coin => {
+            const mcUsd = coin.usd_market_cap;
+            let bondingProgress = coin.complete ? 100 : (mcUsd / 69000) * 100;
+            if (bondingProgress > 100) bondingProgress = 100;
 
-        const fresh = candidates.filter(c => (now - c.createdAt) < (24 * 60 * 60 * 1000));
-        return fresh.length > 0 ? fresh : candidates.slice(0, 10); // Return something no matter what
+            return {
+                mint: coin.mint,
+                symbol: coin.symbol,
+                name: coin.name,
+                createdAt: coin.created_timestamp,
+                vol5m: coin.volume_5m || 0,
+                trades5m: coin.total_trades_5m || 0,
+                uniqueTraders5m: coin.unique_traders_5m || 0,
+                vol30m: coin.volume_30m || 0,
+                volatility5m: coin.volatility_5m || 1.5,
+                price: mcUsd / 1000000000,
+                mcUsd: mcUsd,
+                bondingProgress,
+                image: coin.image_uri || `https://dd.dexscreener.com/ds-data/tokens/solana/${coin.mint}.png`
+            };
+        });
     } catch (error) {
         return [];
+    }
+}
+
+/**
+ * Fetches real-time details (Price, MC, Volume) for a specific token
+ */
+export async function fetchTokenDetails(mint: string): Promise<Partial<TokenCandidate> | null> {
+    try {
+        console.log(`Polling live data for: ${mint}`);
+        // Dexscreener pairs API supports fetching by address
+        const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${mint}`, {
+            cache: 'no-store'
+        });
+
+        if (!response.ok) return null;
+        const data = await response.json();
+
+        if (!data || !data.pairs || data.pairs.length === 0) return null;
+
+        // Take the pair with the highest volume (usually the main pool)
+        const pair = data.pairs.sort((a: any, b: any) => (b.volume?.h24 || 0) - (a.volume?.h24 || 0))[0];
+
+        const mcUsd = pair.marketCap || pair.fdv || 0;
+        const isPump = mint.endsWith('pump');
+        let bondingProgress = isPump ? (mcUsd / 69000) * 100 : 100;
+        if (bondingProgress > 100) bondingProgress = 100;
+
+        return {
+            price: parseFloat(pair.priceUsd || '0'),
+            mcUsd,
+            bondingProgress,
+            vol5m: pair.volume?.m5 || 0,
+            trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0)
+        };
+    } catch (e) {
+        console.error('Error polling token details:', e);
+        return null;
     }
 }
