@@ -12,9 +12,10 @@ export default function MaintenanceView() {
                 // Random increments to feel like real loading
                 const increment = Math.random() * 5;
                 const next = prev + increment;
-                if (next >= 100) {
+                // Cap at 85% to show work in progress
+                if (next >= 85) {
                     clearInterval(interval);
-                    return 100;
+                    return 85;
                 }
                 return next;
             });
