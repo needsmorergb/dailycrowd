@@ -163,6 +163,7 @@ export default function OracleTerminal() {
     const [isTokenLocked, setIsTokenLocked] = useState(false);
     const [showExplainer, setShowExplainer] = useState(false);
     const [isLoadingTokens, setIsLoadingTokens] = useState(false);
+    const [isHalted, setIsHalted] = useState(false);
 
     // Holder Status (Mocked for now, but ready for token check)
     const [isTokenHolder] = useState(true);
@@ -205,6 +206,7 @@ export default function OracleTerminal() {
             const liveTokens = await fetchLatestPumpTokens();
             if (liveTokens.length > 0) {
                 setCandidates(liveTokens);
+                setIsHalted(false);
                 // Auto-select first candidate if none selected
                 if (!selectedToken) {
                     const { chosen } = await selector.selectTargetToken('initial', Date.now(), liveTokens);
@@ -214,6 +216,10 @@ export default function OracleTerminal() {
                     setLaunchPrice(initialPrice);
                     setCurrentPrice(chosen.price || 0.00001);
                 }
+            } else {
+                console.warn('CRITICAL: No live tokens found in last hour. Halting rounds.');
+                setIsHalted(true);
+                setRoundState('CANCELED');
             }
             setIsLoadingTokens(false);
         };
@@ -237,6 +243,9 @@ export default function OracleTerminal() {
 
                 await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate confirmation delay
                 setTxStatus('success');
+
+                // USER BET POT INCREASE
+                setPotSol(prev => prev + parseFloat(stakeAmount));
 
                 console.log(`[QA] Fake transaction successful: ${fakeTxHash}`);
                 console.log(`[QA] Bet placed: ${prediction.toFixed(1)}x with ${stakeAmount} SOL`);
@@ -281,9 +290,9 @@ export default function OracleTerminal() {
 
         const interval = setInterval(() => {
             // 1. Simulate Pot/Burn from "other players" - MORE FREQUENT in QA mode
-            if (Math.random() > 0.75) { // Increased from 0.92 to 0.75 for more activity
-                const entrySize = Math.random() * 0.5 + 0.03;
-                setPotSol(prev => prev + (entrySize * 0.8));
+            if (Math.random() > 0.6) { // Further increased for demo activity
+                const entrySize = Math.random() * 0.15 + 0.05; // Slightly larger bot bets
+                setPotSol(prev => prev + entrySize); // 100% of bot bet to pot for visible growth
                 setBurnedTokens(prev => prev + Math.floor(Math.random() * 50 + 10));
 
                 // Add a new community pick occasionally
@@ -292,6 +301,9 @@ export default function OracleTerminal() {
                     Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
                 const randRoi = (Math.random() * 25 + 1).toFixed(1) + 'x';
 
+                const communityEntry = Math.random() * 0.04 + 0.01;
+                setPotSol(prev => prev + communityEntry);
+
                 setCmPredictions(prev => [{
                     user,
                     roi: randRoi,
@@ -299,7 +311,7 @@ export default function OracleTerminal() {
                 }, ...prev.slice(0, 4)]);
 
                 // Log simulated bet for QA visibility
-                console.log(`[QA] Simulated bet: ${user} predicted ${randRoi} with ${entrySize.toFixed(3)} SOL`);
+                console.log(`[QA] Simulated bot bet: ${user} predicted ${randRoi} with ${entrySize.toFixed(3)} SOL | New Pot: ${potSol.toFixed(3)}`);
             }
 
             // 2. Simulate Market Activity using token volatility
@@ -338,7 +350,6 @@ export default function OracleTerminal() {
                 const secsRemaining = cycleSecs - (virtSecsFromStart % cycleSecs);
 
                 if (secsRemaining <= 0) {
-                    setPotSol(1.36);
                     return { hours: '00', minutes: '30', seconds: '00' };
                 }
 
@@ -615,32 +626,45 @@ export default function OracleTerminal() {
                             </div>
                         </div>
 
-                        {/* Round Timeline Indicator */}
-                        <div className="w-full max-w-xl px-10 mt-4 mb-2">
-                            <div className="flex justify-between items-center relative">
-                                {/* Connector Line */}
-                                <div className="absolute left-0 right-0 h-1 bg-primary/10 top-1/2 -translate-y-1/2 z-0"></div>
-                                <div className="absolute left-0 w-1/3 h-1 bg-neon-green top-1/2 -translate-y-1/2 z-0"></div>
+                        {/* HALTED STATE MESSAGE */}
+                        {isHalted && (
+                            <div className="mt-4 p-4 bg-red-500 text-white border-4 border-primary rounded-xl flex items-center gap-4 animate-pulse max-w-md text-center">
+                                <span className="material-symbols-outlined text-3xl">warning</span>
+                                <div>
+                                    <p className="font-black uppercase italic tracking-widest text-sm">Target Search Failed</p>
+                                    <p className="text-[10px] font-bold opacity-80 uppercase tracking-tighter mt-1">
+                                        No qualified tokens launched in the last hour. Seeking fresh assets...
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-                                {[
-                                    { label: 'Entry Open', status: isTokenLocked ? 'completed' : 'active' },
-                                    { label: 'Locked', status: isTokenLocked ? 'active' : 'pending' },
-                                    { label: 'Live', status: 'pending' },
-                                    { label: 'Resolved', status: 'pending' }
-                                ].map((step, i) => (
-                                    <div key={i} className="relative z-10 flex flex-col items-center gap-2">
-                                        <div className={`size-4 rounded-full border-[3px] border-primary ${step.status === 'active' || step.status === 'completed' ? 'bg-neon-green' : 'bg-white'}`}></div>
-                                        <span className={`text-[12px] font-black uppercase tracking-widest ${step.status === 'active' || step.status === 'completed' ? 'text-primary' : 'text-primary/40'}`}>
-                                            {step.label}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="text-center mt-4">
-                                <p className="text-[12px] font-black text-primary/60 uppercase tracking-widest">
-                                    Next round starts in <span className="text-primary font-mono text-lg ml-1">{timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}</span>
-                                </p>
-                            </div>
+                    {/* Round Timeline Indicator */}
+                    <div className="w-full max-w-xl px-10 mt-4 mb-2">
+                        <div className="flex justify-between items-center relative">
+                            {/* Connector Line */}
+                            <div className="absolute left-0 right-0 h-1 bg-primary/10 top-1/2 -translate-y-1/2 z-0"></div>
+                            <div className="absolute left-0 w-1/3 h-1 bg-neon-green top-1/2 -translate-y-1/2 z-0"></div>
+
+                            {[
+                                { label: 'Entry Open', status: isTokenLocked ? 'completed' : 'active' },
+                                { label: 'Locked', status: isTokenLocked ? 'active' : 'pending' },
+                                { label: 'Live', status: 'pending' },
+                                { label: 'Resolved', status: 'pending' }
+                            ].map((step, i) => (
+                                <div key={i} className="relative z-10 flex flex-col items-center gap-2">
+                                    <div className={`size-4 rounded-full border-[3px] border-primary ${step.status === 'active' || step.status === 'completed' ? 'bg-neon-green' : 'bg-white'}`}></div>
+                                    <span className={`text-[12px] font-black uppercase tracking-widest ${step.status === 'active' || step.status === 'completed' ? 'text-primary' : 'text-primary/40'}`}>
+                                        {step.label}
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="text-center mt-4">
+                            <p className="text-[12px] font-black text-primary/60 uppercase tracking-widest">
+                                Next round starts in <span className="text-primary font-mono text-lg ml-1">{timeLeft.hours}:{timeLeft.minutes}:{timeLeft.seconds}</span>
+                            </p>
                         </div>
                     </div>
 
@@ -1126,18 +1150,23 @@ export default function OracleTerminal() {
                                 </div>
 
                                 {txStatus === 'success' && txHash && (
-                                    <div className="mb-4 p-3 bg-neon-green/10 border-2 border-neon-green/30 rounded-xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2">
-                                        <span className="material-symbols-outlined text-neon-green">check_circle</span>
+                                    <div className="mb-4 p-4 bg-primary text-white border-4 border-neon-green rounded-xl flex items-center gap-4 animate-in fade-in slide-in-from-bottom-2 shadow-[0_0_20px_rgba(204,255,0,0.3)]">
+                                        <div className="size-10 bg-neon-green text-primary rounded-full flex items-center justify-center shrink-0">
+                                            <span className="material-symbols-outlined font-black">lock</span>
+                                        </div>
                                         <div className="flex-1">
-                                            <p className="text-[10px] font-black uppercase text-neon-green">Prediction Locked</p>
-                                            <a
-                                                href={`https://solscan.io/tx/${txHash}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="text-[9px] font-mono text-primary/60 hover:underline"
-                                            >
-                                                {txHash.slice(0, 8)}...{txHash.slice(-8)}
-                                            </a>
+                                            <p className="text-sm font-black uppercase italic tracking-widest text-neon-green">Prediction Locked</p>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] font-mono opacity-60">TX: {txHash.slice(0, 12)}...</span>
+                                                <a
+                                                    href={`https://solscan.io/tx/${txHash}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-[9px] font-bold text-neon-purple hover:underline uppercase"
+                                                >
+                                                    View on Solscan
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -1186,7 +1215,6 @@ export default function OracleTerminal() {
                                     </p>
                                 </div>
                             </div>
-
                             {/* Round History (Transparency) */}
                             <div className="bg-primary border-4 border-primary rounded-2xl p-6 text-white shadow-[8px_8px_0px_0px_#141414]">
                                 <div className="flex items-center gap-3 mb-4">
@@ -1208,9 +1236,7 @@ export default function OracleTerminal() {
                                 </div>
                             </div>
                         </div>
-
                     </div>
-
                 </main>
 
                 {/* Additional Sections */}
@@ -1253,57 +1279,57 @@ export default function OracleTerminal() {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Explainer Modal */}
-            {showExplainer && (
-                <div className="fixed inset-0 bg-primary/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
-                    <div className="bg-white border-4 border-primary rounded-3xl p-10 max-w-xl w-full shadow-[20px_20px_0px_0px_#141414] animate-in fade-in zoom-in duration-300">
-                        <div className="flex justify-between items-start mb-8">
-                            <h3 className="text-3xl font-black italic uppercase tracking-tighter leading-none">
-                                How THE target<br />token is chosen
-                            </h3>
-                            <button onClick={() => setShowExplainer(false)} className="size-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-neon-purple transition-colors">
-                                <span className="material-symbols-outlined">close</span>
+                {/* Explainer Modal */}
+                {showExplainer && (
+                    <div className="fixed inset-0 bg-primary/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+                        <div className="bg-white border-4 border-primary rounded-3xl p-10 max-w-xl w-full shadow-[20px_20px_0px_0px_#141414] animate-in fade-in zoom-in duration-300">
+                            <div className="flex justify-between items-start mb-8">
+                                <h3 className="text-3xl font-black italic uppercase tracking-tighter leading-none">
+                                    How THE target<br />token is chosen
+                                </h3>
+                                <button onClick={() => setShowExplainer(false)} className="size-10 bg-primary text-white rounded-full flex items-center justify-center hover:bg-neon-purple transition-colors">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="flex gap-6 items-start">
+                                    <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">01</div>
+                                    <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
+                                        We pull top trending tokens from Pump.fun and filter for real activity data including volume, trades, and unique traders.
+                                    </p>
+                                </div>
+                                <div className="flex gap-6 items-start">
+                                    <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">02</div>
+                                    <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
+                                        We exclude recently used tokens and apply age filters (5m to 6h) to ensure we target high-velocity &quot;fresh&quot; hype.
+                                    </p>
+                                </div>
+                                <div className="flex gap-6 items-start">
+                                    <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">03</div>
+                                    <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
+                                        We score the remaining pool based on volume acceleration and pick one using weighted cryptographically-secure randomness.
+                                    </p>
+                                </div>
+                                <div className="flex gap-6 items-start">
+                                    <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">04</div>
+                                    <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
+                                        The token is locked 120 seconds before entry closes and cannot be swapped, ensuring a fair, verifiable target for everyone.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowExplainer(false)}
+                                className="w-full mt-10 py-4 bg-primary text-white font-black uppercase italic tracking-widest rounded-xl hover:bg-neon-green hover:text-primary transition-all"
+                            >
+                                Got It
                             </button>
                         </div>
-
-                        <div className="space-y-6">
-                            <div className="flex gap-6 items-start">
-                                <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">01</div>
-                                <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
-                                    We pull top trending tokens from Pump.fun and filter for real activity data including volume, trades, and unique traders.
-                                </p>
-                            </div>
-                            <div className="flex gap-6 items-start">
-                                <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">02</div>
-                                <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
-                                    We exclude recently used tokens and apply age filters (5m to 6h) to ensure we target high-velocity &quot;fresh&quot; hype.
-                                </p>
-                            </div>
-                            <div className="flex gap-6 items-start">
-                                <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">03</div>
-                                <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
-                                    We score the remaining pool based on volume acceleration and pick one using weighted cryptographically-secure randomness.
-                                </p>
-                            </div>
-                            <div className="flex gap-6 items-start">
-                                <div className="size-12 rounded-2xl bg-primary/5 flex items-center justify-center text-primary font-black shrink-0 border-2 border-primary/10">04</div>
-                                <p className="text-sm font-bold text-primary/80 leading-relaxed pt-1">
-                                    The token is locked 120 seconds before entry closes and cannot be swapped, ensuring a fair, verifiable target for everyone.
-                                </p>
-                            </div>
-                        </div>
-
-                        <button
-                            onClick={() => setShowExplainer(false)}
-                            className="w-full mt-10 py-4 bg-primary text-white font-black uppercase italic tracking-widest rounded-xl hover:bg-neon-green hover:text-primary transition-all"
-                        >
-                            Got It
-                        </button>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

@@ -142,7 +142,7 @@ async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
 
         const recent = data.filter(c => c.created_timestamp > oneHourAgo);
 
-        if (recent.length === 0) return await fetchStaticFallback();
+        if (recent.length === 0) return [];
 
         return recent.map(coin => ({
             mint: coin.mint,
@@ -161,25 +161,6 @@ async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
         }));
     } catch (error) {
         console.error('Pump.fun fallback fail:', error);
-        return await fetchStaticFallback();
+        return [];
     }
-}
-
-async function fetchStaticFallback(): Promise<TokenCandidate[]> {
-    console.warn('CRITICAL: No live tokens found in last hour. Using static failover (Check API connectivity).');
-    return [{
-        mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump',
-        symbol: 'FALLBACK',
-        name: 'Fallback Token',
-        createdAt: Date.now() - 30 * 60 * 1000,
-        vol5m: 5000,
-        trades5m: 100,
-        uniqueTraders5m: 20,
-        vol30m: 30000,
-        volatility5m: 2.0,
-        price: 0.00001,
-        mcUsd: 10000,
-        bondingProgress: 15,
-        image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
-    }];
 }
