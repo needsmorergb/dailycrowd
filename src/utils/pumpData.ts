@@ -49,29 +49,34 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
         const candidates: TokenCandidate[] = [];
         const seenMints = new Set<string>();
 
-        // STRICT FILTER: Created < 60 mins ago AND has volume AND has price motion
-        const validPairs = data.pairs.filter((p: any) => {
+        // Initial filter: STRICT activity within 1 hour
+        let validPairs = data.pairs.filter((p: any) => {
             if (!p.pairCreatedAt) return false;
-
             const pairAge = Date.now() - p.pairCreatedAt;
-            const isStrictlyRecent = pairAge < (60 * 60 * 1000);
-
+            const isStrictlyRecent = pairAge < (60 * 60 * 1000); // 1 hour
             const isExcluded = EXCLUDED_SYMBOLS.includes(p.baseToken?.symbol?.toUpperCase());
 
-            // Motion check: must have volume and some price movement in last 5m or 1h
-            const hasVolume = (p.volume?.h1 || 0) > 500; // Require at least $500 vol
-            const hasMotion = Math.abs(p.priceChange?.h1 || 0) > 0.1 || Math.abs(p.priceChange?.m5 || 0) > 0.1;
+            const hasGoodVolume = (p.volume?.h1 || 0) > 500;
+            const hasClearMotion = Math.abs(p.priceChange?.h1 || 0) > 0.1 || Math.abs(p.priceChange?.m5 || 0) > 0.1;
 
-            return (
-                p.chainId === 'solana' &&
-                isStrictlyRecent &&
-                !isExcluded &&
-                hasVolume &&
-                hasMotion &&
-                p.baseToken?.address &&
-                p.priceUsd
-            );
+            return p.chainId === 'solana' && isStrictlyRecent && !isExcluded && hasGoodVolume && hasClearMotion && p.baseToken?.address && p.priceUsd;
         });
+
+        // Backup filter: Relaxed activity within SAME 1 hour window
+        if (validPairs.length === 0) {
+            console.log('No high-activity tokens found in 1h, loosening thresholds...');
+            validPairs = data.pairs.filter((p: any) => {
+                if (!p.pairCreatedAt) return false;
+                const pairAge = Date.now() - p.pairCreatedAt;
+                const isStrictlyRecent = pairAge < (60 * 60 * 1000);
+                const isExcluded = EXCLUDED_SYMBOLS.includes(p.baseToken?.symbol?.toUpperCase());
+
+                const hasAnyVolume = (p.volume?.h1 || 0) > 100;
+                const hasAnyMotion = Math.abs(p.priceChange?.h1 || 0) > 0 || Math.abs(p.priceChange?.m5 || 0) > 0;
+
+                return p.chainId === 'solana' && isStrictlyRecent && !isExcluded && hasAnyVolume && hasAnyMotion && p.baseToken?.address && p.priceUsd;
+            });
+        }
 
         console.log(`Found ${validPairs.length} qualified tokens launched in the last hour`);
 

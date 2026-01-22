@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'application/json'
+};
+
 export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const source = searchParams.get('source');
@@ -7,14 +12,16 @@ export async function GET(req: NextRequest) {
     try {
         if (source === 'pump') {
             const response = await fetch('https://frontend-api.pump.fun/coins/latest?limit=50&offset=0', {
+                headers: HEADERS,
                 cache: 'no-store'
             });
-            if (!response.ok) return NextResponse.json({ error: 'Pump.fun fetch failed' }, { status: 500 });
+            if (!response.ok) return NextResponse.json({ error: `Pump.fun fetch failed with status ${response.status}` }, { status: 500 });
             return NextResponse.json(await response.json());
         }
 
         // Default: Dexscreener
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112', {
+            headers: HEADERS,
             next: { revalidate: 30 }
         });
 
