@@ -1,4 +1,4 @@
-import { useReducer, useEffect, useRef } from 'react';
+import { useReducer, useEffect, useRef, useCallback } from 'react';
 import { VwapTracker } from '../utils/vwap';
 
 type State = {
@@ -31,7 +31,7 @@ export function useVwapPeak(launchPrice: number, roundStartTime: number) {
         dispatch({ type: 'RESET', launchPrice });
     }, [launchPrice, roundStartTime]);
 
-    const addTrade = (price: number, volume: number) => {
+    const addTrade = useCallback((price: number, volume: number) => {
         trackerRef.current.addTrade(price, volume);
         const newPeak = trackerRef.current.updatePeak(roundStartTime, Date.now());
         dispatch({
@@ -39,7 +39,7 @@ export function useVwapPeak(launchPrice: number, roundStartTime: number) {
             peakVwap: newPeak,
             peakRoi: trackerRef.current.getPeakRoi()
         });
-    };
+    }, [roundStartTime]);
 
     return { peakVwap: state.peakVwap, peakRoi: state.peakRoi, addTrade };
 }

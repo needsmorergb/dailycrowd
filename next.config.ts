@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  productionBrowserSourceMaps: false, // Security: Hide source code
+  poweredByHeader: false,             // Security: Obscure stack
   images: {
     remotePatterns: [
       {

@@ -56,23 +56,26 @@ export class VwapTracker {
      */
     updatePeak(roundStartTime: number, currentTime: number) {
         let currentBucketStart = roundStartTime;
-        let maxVwapFound = 0;
+        let localMaxVwap = 0;
 
+        // Optimized: We could start from lastProcessedBucket, but since compute is light, 
+        // we'll just ensure at least one full bucket is checked.
         while (currentBucketStart + this.windowSizeMs <= currentTime) {
             const bucketVwap = this.calculateVwap(
                 currentBucketStart,
                 currentBucketStart + this.windowSizeMs
             );
 
-            if (bucketVwap > maxVwapFound) {
-                maxVwapFound = bucketVwap;
+            if (bucketVwap > localMaxVwap) {
+                localMaxVwap = bucketVwap;
             }
 
             currentBucketStart += this.windowSizeMs;
         }
 
-        if (maxVwapFound > this.peakVwap) {
-            this.peakVwap = maxVwapFound;
+        // Strictly monotonic update
+        if (localMaxVwap > this.peakVwap) {
+            this.peakVwap = localMaxVwap;
         }
 
         return this.peakVwap;
@@ -81,15 +84,13 @@ export class VwapTracker {
     getPeakRoi(): number {
         if (!this.launchPrice) return 0;
 
-        // If we haven't completed a single 30s bucket yet, return the highest instant ROI seen.
-        // This prevents the UI from being stuck at 0.00x during the first 30s of a round.
-        if (this.peakVwap === 0 && this.trades.length > 0) {
-            const maxInstantPrice = Math.max(...this.trades.map(t => t.price));
-            return maxInstantPrice / this.launchPrice;
-        }
+        const highestInstantPrice = this.trades.length > 0
+            ? Math.max(...this.trades.map(t => t.price))
+            : 0;
+        const highestInstantRoi = highestInstantPrice / this.launchPrice;
+        const peakVwapRoi = this.peakVwap / this.launchPrice;
 
-        if (this.peakVwap === 0) return 0;
-        return this.peakVwap / this.launchPrice;
+        return Math.max(peakVwapRoi, highestInstantRoi);
     }
 
     getPeakVwap(): number {
