@@ -19,58 +19,62 @@ export interface PumpTokenApiResponse {
 }
 
 /**
- * Primary fetch: Recent pumping tokens (last hour)
- * Excludes SOL (base token) and searches for tokens with recent price action
+ * Primary fetch: ONLY tokens launched in the last hour
+ * Excludes ALL established tokens (SOL, BONK, JUP, etc.)
  */
 export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
     try {
-        console.log('Fetching recently pumping tokens (last hour)...');
+        console.log('Fetching tokens launched in the last hour...');
 
-        // Fetch trending Solana pairs sorted by 1h price change
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+
+        // Fetch trending Solana pairs
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112');
 
         if (!response.ok) {
-            console.log('Dexscreener trending failed, trying search...');
-            return await fetchBySearch();
+            console.log('Dexscreener trending failed, trying Pump.fun...');
+            return await fetchPumpFunTokens();
         }
 
         const data = await response.json();
 
         if (!data || !data.pairs || data.pairs.length === 0) {
-            return await fetchBySearch();
+            return await fetchPumpFunTokens();
         }
 
         const candidates: TokenCandidate[] = [];
         const seenMints = new Set<string>();
-        const oneHourAgo = Date.now() - (60 * 60 * 1000);
 
-        // Filter for recently pumping pairs
-        const validPairs = data.pairs.filter((p: any) => {
-            // Exclude SOL itself (wrapped SOL)
-            if (p.baseToken?.symbol === 'SOL' || p.baseToken?.symbol === 'WSOL') {
-                return false;
-            }
+        // STRICT FILTER: Only tokens launched in the last hour
+        const recentPairs = data.pairs.filter((p: any) => {
+            // Must have creation timestamp
+            if (!p.pairCreatedAt) return false;
 
-            // Must have recent activity
-            const pairAge = p.pairCreatedAt ? Date.now() - p.pairCreatedAt : Infinity;
-            const hasRecentActivity = pairAge < (24 * 60 * 60 * 1000); // Created in last 24h OR has recent volume
+            const pairAge = Date.now() - p.pairCreatedAt;
+            const isWithinLastHour = pairAge < (60 * 60 * 1000); // 1 hour
 
-            // Must be pumping (positive 1h price change)
-            const priceChange1h = p.priceChange?.h1 || 0;
-            const isPumping = priceChange1h > 5; // At least 5% gain in last hour
+            // Exclude SOL and all established tokens
+            const excludedSymbols = ['SOL', 'WSOL', 'BONK', 'JUP', 'WIF', 'PYTH', 'POPCAT', 'USDC', 'USDT'];
+            const isExcluded = excludedSymbols.includes(p.baseToken?.symbol?.toUpperCase());
+
+            // Must have some activity
+            const hasVolume = (p.volume?.h1 || 0) > 100; // At least $100 volume
+            const hasLiquidity = (p.liquidity?.usd || 0) > 100; // At least $100 liquidity
 
             return (
                 p.chainId === 'solana' &&
-                p.liquidity?.usd > 5000 &&
-                p.volume?.h1 > 5000 && // At least $5K volume in last hour
+                isWithinLastHour &&
+                !isExcluded &&
+                hasVolume &&
+                hasLiquidity &&
                 p.baseToken?.address &&
-                p.priceUsd &&
-                isPumping &&
-                (hasRecentActivity || p.volume?.h1 > 50000) // Either new or high volume
+                p.priceUsd
             );
         });
 
-        validPairs.slice(0, 30).forEach((pair: any) => {
+        console.log(`Found ${recentPairs.length} tokens launched in the last hour`);
+
+        recentPairs.slice(0, 30).forEach((pair: any) => {
             if (seenMints.has(pair.baseToken.address)) return;
 
             seenMints.add(pair.baseToken.address);
@@ -83,11 +87,16 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
                 bondingProgress = Math.min(100, (marketCap / 69000) * 100);
             }
 
+            const pairAge = Date.now() - pair.pairCreatedAt;
+            const ageMinutes = Math.floor(pairAge / (60 * 1000));
+
+            console.log(`  - ${pair.baseToken.symbol}: launched ${ageMinutes}m ago, vol: $${pair.volume?.h1?.toFixed(0) || 0}`);
+
             candidates.push({
                 mint: pair.baseToken.address,
                 symbol: pair.baseToken.symbol,
                 name: pair.baseToken.name,
-                createdAt: pair.pairCreatedAt || Date.now(),
+                createdAt: pair.pairCreatedAt,
                 vol5m: pair.volume?.m5 || 0,
                 trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
                 uniqueTraders5m: 0,
@@ -101,108 +110,25 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
         });
 
         if (candidates.length > 0) {
-            console.log(`Found ${candidates.length} recently pumping tokens (excluding SOL)`);
-            // Sort by 1h volume to get most active pumps
-            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
+            // Sort by most recent first
+            return candidates.sort((a, b) => b.createdAt - a.createdAt).slice(0, 20);
         }
 
-        return await fetchBySearch();
-    } catch (error) {
-        console.error('Recent pump fetch error:', error);
-        return await fetchBySearch();
-    }
-}
-
-/**
- * Secondary: Search-based fetch for diverse pumping tokens
- */
-async function fetchBySearch(): Promise<TokenCandidate[]> {
-    try {
-        console.log('Searching for diverse pumping tokens...');
-
-        // Search popular pumping tokens (NOT SOL)
-        const queries = ['BONK', 'JUP', 'WIF', 'PYTH', 'POPCAT'];
-
-        const results = await Promise.all(
-            queries.map(q =>
-                fetch(`https://api.dexscreener.com/latest/dex/search/?q=${q}`)
-                    .then(res => res.ok ? res.json() : null)
-                    .catch(() => null)
-            )
-        );
-
-        const candidates: TokenCandidate[] = [];
-        const seenMints = new Set<string>();
-
-        results.forEach(data => {
-            if (!data || !data.pairs) return;
-
-            const validPairs = data.pairs.filter((p: any) => {
-                // Exclude SOL
-                if (p.baseToken?.symbol === 'SOL' || p.baseToken?.symbol === 'WSOL') {
-                    return false;
-                }
-
-                const priceChange1h = p.priceChange?.h1 || 0;
-
-                return (
-                    p.chainId === 'solana' &&
-                    p.liquidity?.usd > 3000 &&
-                    p.volume?.h1 > 3000 &&
-                    p.baseToken?.address &&
-                    priceChange1h > 0 // Positive price action
-                );
-            });
-
-            validPairs.forEach((pair: any) => {
-                if (seenMints.has(pair.baseToken.address)) return;
-
-                seenMints.add(pair.baseToken.address);
-
-                const isPumpToken = pair.baseToken.address.endsWith('pump');
-                const marketCap = pair.marketCap || pair.fdv || 0;
-
-                let bondingProgress = 100;
-                if (isPumpToken && marketCap < 69000) {
-                    bondingProgress = Math.min(100, (marketCap / 69000) * 100);
-                }
-
-                candidates.push({
-                    mint: pair.baseToken.address,
-                    symbol: pair.baseToken.symbol,
-                    name: pair.baseToken.name,
-                    createdAt: pair.pairCreatedAt || Date.now(),
-                    vol5m: pair.volume?.m5 || 0,
-                    trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
-                    uniqueTraders5m: 0,
-                    vol30m: (pair.volume?.m5 || 0) * 6,
-                    volatility5m: Math.abs(pair.priceChange?.m5 || 0),
-                    price: parseFloat(pair.priceUsd || '0'),
-                    mcUsd: marketCap,
-                    bondingProgress,
-                    image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
-                });
-            });
-        });
-
-        if (candidates.length > 0) {
-            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
-        }
-
+        console.log('No tokens found in last hour, trying Pump.fun...');
         return await fetchPumpFunTokens();
     } catch (error) {
-        console.error('Search fetch error:', error);
+        console.error('Recent token fetch error:', error);
         return await fetchPumpFunTokens();
     }
 }
 
 /**
- * Tertiary: Pump.fun API fallback
+ * Secondary: Pump.fun API for new launches
  */
 async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
     try {
-        console.log('Fetching from Pump.fun API...');
-        const response = await fetch('https://frontend-api.pump.fun/coins/trending?limit=20&offset=0', {
+        console.log('Fetching new launches from Pump.fun...');
+        const response = await fetch('https://frontend-api.pump.fun/coins/latest?limit=50&offset=0', {
             method: 'GET',
             headers: { 'Accept': 'application/json' }
         });
@@ -213,21 +139,41 @@ async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
 
         if (!data || data.length === 0) throw new Error('Empty response from Pump.fun');
 
-        return data.map(coin => ({
-            mint: coin.mint,
-            symbol: coin.symbol,
-            name: coin.name,
-            createdAt: coin.created_timestamp,
-            vol5m: coin.volume_5m || 0,
-            trades5m: coin.total_trades_5m || 0,
-            uniqueTraders5m: coin.unique_traders_5m || 0,
-            vol30m: coin.volume_30m || 0,
-            volatility5m: coin.volatility_5m || (Math.random() * 2),
-            price: (coin.usd_market_cap / 1000000000) * (1 + Math.random() * 0.1),
-            mcUsd: coin.usd_market_cap,
-            bondingProgress: coin.complete ? 100 : (coin.bonding_curve_percentage ?? Math.min(100, (coin.usd_market_cap / 69000) * 100)),
-            image: coin.image_uri || `https://dd.dexscreener.com/ds-data/tokens/solana/${coin.mint}.png`
-        }));
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
+
+        // Filter for tokens created in the last hour
+        const recentTokens = data.filter(coin => {
+            const createdAt = coin.created_timestamp;
+            return createdAt > oneHourAgo;
+        });
+
+        console.log(`Found ${recentTokens.length} Pump.fun tokens launched in the last hour`);
+
+        if (recentTokens.length === 0) {
+            console.warn('No recent Pump.fun tokens, using static fallback');
+            return await fetchStaticFallback();
+        }
+
+        return recentTokens.map(coin => {
+            const ageMinutes = Math.floor((Date.now() - coin.created_timestamp) / (60 * 1000));
+            console.log(`  - ${coin.symbol}: launched ${ageMinutes}m ago`);
+
+            return {
+                mint: coin.mint,
+                symbol: coin.symbol,
+                name: coin.name,
+                createdAt: coin.created_timestamp,
+                vol5m: coin.volume_5m || 0,
+                trades5m: coin.total_trades_5m || 0,
+                uniqueTraders5m: coin.unique_traders_5m || 0,
+                vol30m: coin.volume_30m || 0,
+                volatility5m: coin.volatility_5m || (Math.random() * 2),
+                price: (coin.usd_market_cap / 1000000000) * (1 + Math.random() * 0.1),
+                mcUsd: coin.usd_market_cap,
+                bondingProgress: coin.complete ? 100 : (coin.bonding_curve_percentage ?? Math.min(100, (coin.usd_market_cap / 69000) * 100)),
+                image: coin.image_uri || `https://dd.dexscreener.com/ds-data/tokens/solana/${coin.mint}.png`
+            };
+        });
     } catch (error) {
         console.error('Pump.fun API error:', error);
         return await fetchStaticFallback();
@@ -235,24 +181,27 @@ async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
 }
 
 /**
- * Last resort: Static fallback
+ * Last resort: Static fallback (simulated new token)
  */
 async function fetchStaticFallback(): Promise<TokenCandidate[]> {
-    console.warn('Using static fallback token list');
+    console.warn('Using static fallback - simulated new token');
+
+    const now = Date.now();
+    const thirtyMinutesAgo = now - (30 * 60 * 1000);
 
     return [{
         mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump',
-        symbol: 'BILLY',
-        name: 'Billy',
-        createdAt: Date.now(),
-        vol5m: 12000,
-        trades5m: 1500,
-        uniqueTraders5m: 400,
-        vol30m: 50000,
+        symbol: 'NEWTOKEN',
+        name: 'New Launch Token',
+        createdAt: thirtyMinutesAgo,
+        vol5m: 5000,
+        trades5m: 150,
+        uniqueTraders5m: 40,
+        vol30m: 15000,
         volatility5m: 2.5,
-        price: 0.02,
-        mcUsd: 20000000,
-        bondingProgress: 100,
+        price: 0.00001,
+        mcUsd: 10000,
+        bondingProgress: 15,
         image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
     }];
 }
