@@ -8,7 +8,7 @@ pub mod state;
 use crate::errors::OracleError;
 use crate::state::*;
 
-declare_id!("CrowdOracle11111111111111111111111111111111");
+declare_id!("8SPRdNaAnWjPGGP91uRsVcBEkzxvizDjFUVdWkoCZceq");
 
 #[program]
 pub mod crowd_oracle {
@@ -204,11 +204,7 @@ pub mod crowd_oracle {
         entry.claimed = true; // Mark as "claimed" (refunded) so they can't drain
 
         // Transfer refund
-        let round_seeds = &[
-            b"round",
-            &round.round_id.to_le_bytes(),
-            &[round.bump],
-        ];
+        let round_id_bytes = round.round_id.to_le_bytes();
         
         **round.to_account_info().try_borrow_mut_lamports()? -= refund_amount;
         **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += refund_amount;
@@ -254,11 +250,7 @@ pub mod crowd_oracle {
             let reward = total_winners_pool / 10; // Mock share
             entry.claimed = true;
 
-            let round_seeds = &[
-                b"round",
-                &round.round_id.to_le_bytes(),
-                &[round.bump],
-            ];
+            let round_id_bytes = round.round_id.to_le_bytes();
 
             **round.to_account_info().try_borrow_mut_lamports()? -= reward;
             **ctx.accounts.user.to_account_info().try_borrow_mut_lamports()? += reward;

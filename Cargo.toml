@@ -1,0 +1,15 @@
+[workspace]
+members = [
+    "anchor/crowd_oracle/programs/crowd_oracle"
+]
+resolver = "2"
+
+[patch.crates-io]
+solana-program = { git = "https://github.com/solana-labs/solana", tag = "v1.17.34" }
+ahash = { git = "https://github.com/tkaitchuck/ahash", tag = "v0.8.11" }
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+panic = "abort"

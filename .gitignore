@@ -46,8 +46,17 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+# anchor/solana
+/target/
+/anchor/crowd_oracle/target/
+/anchor/crowd_oracle/node_modules/
 
-# SQLite
+# local db
+dev.db
 *.db
 *.db-journal
+
+# logs
+lint_output.txt
+lint_results.json
+lint_results.txt
