@@ -82,8 +82,29 @@ const Docs = () => {
             )
         },
         {
+            id: "crowd-token",
+            title: "7. $CROWD Token",
+            content: (
+                <div className="space-y-4">
+                    <p>The official CROWD token is live on Solana.</p>
+                    <div className="p-4 bg-neon-green/10 border-2 border-neon-green rounded-lg">
+                        <p className="text-xs font-bold text-primary/60 uppercase tracking-widest mb-2">Contract Address</p>
+                        <p className="font-mono text-xs break-all text-primary mb-3">65uNmB4h4a3CVCaoAWwhhLNPfJLQNdq2c7cJPgXFpump</p>
+                        <a
+                            href="https://pump.fun/coin/65uNmB4h4a3CVCaoAWwhhLNPfJLQNdq2c7cJPgXFpump"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block bg-primary hover:bg-primary/90 text-white font-black uppercase text-xs py-2 px-4 rounded transition-colors"
+                        >
+                            View on Pump.fun →
+                        </a>
+                    </div>
+                </div>
+            )
+        },
+        {
             id: "soft-start",
-            title: "7. Soft-Start & Refunds",
+            title: "8. Soft-Start & Refunds",
             content: (
                 <div className="space-y-4">
                     <p>Parameters to protect game integrity and prevent empty rounds:</p>

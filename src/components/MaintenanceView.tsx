@@ -74,6 +74,33 @@ export default function MaintenanceView() {
                     Coming Soon
                 </p>
 
+                {/* Token Information */}
+                <div className="mt-12 w-full max-w-md space-y-4">
+                    <div className="border border-[#ccff00]/20 bg-[#ccff00]/5 rounded-lg p-6 backdrop-blur-sm">
+                        <h3 className="text-[#ccff00] font-black uppercase tracking-wider text-sm mb-4">
+                            $CROWD Token
+                        </h3>
+
+                        {/* Contract Address */}
+                        <div className="mb-4">
+                            <p className="text-[#ccff00]/60 text-xs uppercase tracking-widest mb-2">Contract Address</p>
+                            <div className="bg-black/40 border border-[#ccff00]/10 rounded p-3 font-mono text-xs break-all text-[#ccff00]/80">
+                                65uNmB4h4a3CVCaoAWwhhLNPfJLQNdq2c7cJPgXFpump
+                            </div>
+                        </div>
+
+                        {/* Pump.fun Link */}
+                        <a
+                            href="https://pump.fun/coin/65uNmB4h4a3CVCaoAWwhhLNPfJLQNdq2c7cJPgXFpump"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full bg-[#ccff00] hover:bg-[#b3e600] text-black font-black uppercase tracking-wider text-sm py-3 px-4 rounded transition-all duration-200 text-center shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)]"
+                        >
+                            View on Pump.fun →
+                        </a>
+                    </div>
+                </div>
+
                 {/* Footer decorations */}
                 <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-8 opacity-20 text-[10px] font-mono uppercase">
                     <span>Protocol v0.1.0</span>
