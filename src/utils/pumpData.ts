@@ -19,14 +19,14 @@ export interface PumpTokenApiResponse {
 }
 
 /**
- * Primary fetch: High-volume Solana tokens from Dexscreener
- * Searches for ANY trending tokens with active trading
+ * Primary fetch: Recent pumping tokens (last hour)
+ * Excludes SOL (base token) and searches for tokens with recent price action
  */
 export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
     try {
-        console.log('Fetching high-volume Solana tokens...');
+        console.log('Fetching recently pumping tokens (last hour)...');
 
-        // Fetch trending Solana pairs sorted by 24h volume
+        // Fetch trending Solana pairs sorted by 1h price change
         const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112');
 
         if (!response.ok) {
@@ -42,15 +42,33 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
 
         const candidates: TokenCandidate[] = [];
         const seenMints = new Set<string>();
+        const oneHourAgo = Date.now() - (60 * 60 * 1000);
 
-        // Filter for high-volume Solana pairs
-        const validPairs = data.pairs.filter((p: any) =>
-            p.chainId === 'solana' &&
-            p.liquidity?.usd > 10000 &&
-            p.volume?.h24 > 50000 &&
-            p.baseToken?.address &&
-            p.priceUsd
-        );
+        // Filter for recently pumping pairs
+        const validPairs = data.pairs.filter((p: any) => {
+            // Exclude SOL itself (wrapped SOL)
+            if (p.baseToken?.symbol === 'SOL' || p.baseToken?.symbol === 'WSOL') {
+                return false;
+            }
+
+            // Must have recent activity
+            const pairAge = p.pairCreatedAt ? Date.now() - p.pairCreatedAt : Infinity;
+            const hasRecentActivity = pairAge < (24 * 60 * 60 * 1000); // Created in last 24h OR has recent volume
+
+            // Must be pumping (positive 1h price change)
+            const priceChange1h = p.priceChange?.h1 || 0;
+            const isPumping = priceChange1h > 5; // At least 5% gain in last hour
+
+            return (
+                p.chainId === 'solana' &&
+                p.liquidity?.usd > 5000 &&
+                p.volume?.h1 > 5000 && // At least $5K volume in last hour
+                p.baseToken?.address &&
+                p.priceUsd &&
+                isPumping &&
+                (hasRecentActivity || p.volume?.h1 > 50000) // Either new or high volume
+            );
+        });
 
         validPairs.slice(0, 30).forEach((pair: any) => {
             if (seenMints.has(pair.baseToken.address)) return;
@@ -83,25 +101,27 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
         });
 
         if (candidates.length > 0) {
-            console.log(`Found ${candidates.length} high-volume tokens`);
+            console.log(`Found ${candidates.length} recently pumping tokens (excluding SOL)`);
+            // Sort by 1h volume to get most active pumps
             return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
         }
 
         return await fetchBySearch();
     } catch (error) {
-        console.error('High-volume fetch error:', error);
+        console.error('Recent pump fetch error:', error);
         return await fetchBySearch();
     }
 }
 
 /**
- * Secondary: Search-based fetch for diverse tokens
+ * Secondary: Search-based fetch for diverse pumping tokens
  */
 async function fetchBySearch(): Promise<TokenCandidate[]> {
     try {
-        console.log('Searching for diverse high-volume tokens...');
+        console.log('Searching for diverse pumping tokens...');
 
-        const queries = ['SOL', 'BONK', 'JUP', 'WIF', 'PYTH'];
+        // Search popular pumping tokens (NOT SOL)
+        const queries = ['BONK', 'JUP', 'WIF', 'PYTH', 'POPCAT'];
 
         const results = await Promise.all(
             queries.map(q =>
@@ -117,12 +137,22 @@ async function fetchBySearch(): Promise<TokenCandidate[]> {
         results.forEach(data => {
             if (!data || !data.pairs) return;
 
-            const validPairs = data.pairs.filter((p: any) =>
-                p.chainId === 'solana' &&
-                p.liquidity?.usd > 5000 &&
-                p.volume?.h24 > 10000 &&
-                p.baseToken?.address
-            );
+            const validPairs = data.pairs.filter((p: any) => {
+                // Exclude SOL
+                if (p.baseToken?.symbol === 'SOL' || p.baseToken?.symbol === 'WSOL') {
+                    return false;
+                }
+
+                const priceChange1h = p.priceChange?.h1 || 0;
+
+                return (
+                    p.chainId === 'solana' &&
+                    p.liquidity?.usd > 3000 &&
+                    p.volume?.h1 > 3000 &&
+                    p.baseToken?.address &&
+                    priceChange1h > 0 // Positive price action
+                );
+            });
 
             validPairs.forEach((pair: any) => {
                 if (seenMints.has(pair.baseToken.address)) return;

@@ -221,7 +221,32 @@ export default function OracleTerminal() {
 
 
     const handleLockIn = async () => {
-        if (!publicKey || !stakeAmount || parseFloat(stakeAmount) <= 0) return;
+        if (!stakeAmount || parseFloat(stakeAmount) <= 0) return;
+
+        // QA Mode: Fake transaction (no wallet required)
+        if (isSimulationMode) {
+            try {
+                setTxStatus('signing');
+                await new Promise(resolve => setTimeout(resolve, 800)); // Simulate signing delay
+
+                const fakeTxHash = 'QA' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                setTxHash(fakeTxHash);
+                setTxStatus('confirming');
+
+                await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate confirmation delay
+                setTxStatus('success');
+
+                console.log(`[QA] Fake transaction successful: ${fakeTxHash}`);
+                console.log(`[QA] Bet placed: ${prediction.toFixed(1)}x with ${stakeAmount} SOL`);
+            } catch (error) {
+                console.error('[QA] Fake transaction failed:', error);
+                setTxStatus('error');
+            }
+            return;
+        }
+
+        // Real Mode: Actual blockchain transaction
+        if (!publicKey) return;
 
         try {
             setTxStatus('signing');
@@ -1094,9 +1119,9 @@ export default function OracleTerminal() {
 
                                 <button
                                     onClick={handleLockIn}
-                                    disabled={!connected || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee}
+                                    disabled={(!isSimulationMode && !connected) || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee}
                                     className={`w-full py-4 text-white text-lg font-black uppercase italic tracking-widest rounded-xl border-4 border-primary transition-all group relative overflow-hidden
-                                        ${(!connected || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee)
+                                        ${((!isSimulationMode && !connected) || txStatus === 'signing' || txStatus === 'confirming' || !stakeAmount || parseFloat(stakeAmount) < minFee)
                                             ? 'bg-primary/40 cursor-not-allowed border-primary/10'
                                             : 'bg-primary hover:bg-neon-green hover:text-primary hover:border-primary hover:shadow-[4px_4px_0px_0px_#141414]'}`}
                                 >
