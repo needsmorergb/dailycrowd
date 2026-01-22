@@ -1008,6 +1008,23 @@ export default function OracleTerminal() {
                                         </div>
                                     )}
 
+                                    {/* SEARCHING / HALTED STATE MESSAGE */}
+                                    {isHalted && (
+                                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+                                            <div className="bg-zinc-900 border border-primary/30 p-8 rounded-xl max-w-md text-center shadow-2xl">
+                                                <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+                                                <h2 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">Searching for Active Markets</h2>
+                                                <p className="text-zinc-400 mb-6 leading-relaxed">
+                                                    The Oracle is scanning the Solana ecosystem for fresh, high-velocity tokens to ensure a fair and exciting round.
+                                                </p>
+                                                <div className="flex gap-3 justify-center">
+                                                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full animate-pulse">Scanning Pump.fun</span>
+                                                    <span className="px-3 py-1 bg-primary/10 text-primary text-xs font-bold rounded-full animate-pulse delay-75">Indexing Dexscreener</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {/* Stats Grid */}
                                     <div className="grid grid-cols-1 gap-4 w-full">
                                         <div className="bg-white p-6 rounded-xl border-2 border-primary flex flex-col items-center justify-center group hover:scale-[1.02] transition-transform">

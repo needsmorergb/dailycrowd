@@ -26,11 +26,31 @@ export async function GET(req: NextRequest) {
             return NextResponse.json(data);
         }
 
-        // Default: Dexscreener
-        console.log('Proxying Dexscreener fetch...');
-        const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112', {
+        if (source === 'profiles') {
+            console.log('Proxying Dexscreener Profiles...');
+            const response = await fetch('https://api.dexscreener.com/token-profiles/latest/v1', {
+                headers: HEADERS,
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error(`Profiles failed: ${response.status}`);
+            return NextResponse.json(await response.json());
+        }
+
+        if (source === 'boosts') {
+            console.log('Proxying Dexscreener Boosts...');
+            const response = await fetch('https://api.dexscreener.com/token-boosts/latest/v1', {
+                headers: HEADERS,
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error(`Boosts failed: ${response.status}`);
+            return NextResponse.json(await response.json());
+        }
+
+        // Default: Dexscreener Latest Solana Pairs
+        console.log('Proxying Dexscreener Latest Solana Pairs...');
+        const response = await fetch('https://api.dexscreener.com/token-profiles/latest/v1', {
             headers: HEADERS,
-            next: { revalidate: 30 }
+            cache: 'no-store'
         });
 
         if (!response.ok) {
