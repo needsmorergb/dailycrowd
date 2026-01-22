@@ -113,6 +113,11 @@ export default function OracleTerminal() {
             console.log('[QA] Auto-activating round for immediate gameplay');
             setRoundState('ACTIVE');
             setLobbyPlayers(MIN_PLAYERS);
+
+            // Set a simulated start time for 5x speedup
+            // A 30 min round becomes 6 mins
+            const sixMinsAgo = Date.now() - (1 * 60 * 1000); // Start as if 1 min already passed
+            // Ref: useVwapPeak uses roundStartTime
         }
     }, [isSimulationMode]);
 
@@ -134,23 +139,20 @@ export default function OracleTerminal() {
         const interval = setInterval(() => {
             setElapsedLobbyTime(prev => prev + 1);
 
-            // Sim: Auto-increment players to show progress
+            // Sim: Auto-increment players to show progress (FASTER in QA)
             setLobbyPlayers(prev => {
-                // If thresholds met, Activate!
-                if (prev >= MIN_PLAYERS - 1) { // -1 because we are about to increment to target
+                if (prev >= MIN_PLAYERS - 1) {
                     setRoundState('ACTIVE');
                     return prev + 1;
                 }
-                const chance = Math.random();
-                return chance > 0.7 ? prev + 1 : prev;
+                return prev + Math.floor(Math.random() * 3 + 1); // 1-3 players per tick
             });
 
-            // Sim: Check Timeout
             if (Date.now() > lobbyEndTime) {
                 setRoundState('CANCELED');
             }
 
-        }, 1000);
+        }, 500); // Faster lobby tick for demo
 
         return () => clearInterval(interval);
     }, [roundState, lobbyEndTime, isSimulationMode]);
@@ -320,6 +322,34 @@ export default function OracleTerminal() {
             const now = new Date();
             const zonedNow = toZonedTime(now, TIMEZONE);
 
+            // QA MODE: Accelerated Round (5x Speed)
+            if (isSimulationMode) {
+                // We want a full round to appear as 6 minutes instead of 30
+                // We'll use a virtual target time for display
+                const virtualBase = startOfHour(zonedNow);
+                const minutes = zonedNow.getMinutes();
+                const currentCycle = Math.floor(minutes / 6); // 6-minute cycles
+                const targetCycleMinutes = (currentCycle + 1) * 6;
+                const targetTime = setSeconds(setMinutes(virtualBase, targetCycleMinutes), 0);
+
+                const diff = differenceInSeconds(targetTime, zonedNow);
+
+                if (diff <= 0) {
+                    // Trigger round reset logic (simplified for QA)
+                    setPotSol(1.36);
+                    return { hours: '00', minutes: '06', seconds: '00' };
+                }
+
+                const m = Math.floor(diff / 60);
+                const s = Math.floor(diff % 60);
+
+                return {
+                    hours: '00',
+                    minutes: m.toString().padStart(2, '0'),
+                    seconds: s.toString().padStart(2, '0')
+                };
+            }
+
             // Set Start Anchor: Today at 5:00 PM PST
             const startAnchor = setSeconds(setMinutes(setHours(toZonedTime(new Date(), TIMEZONE), ANCHOR_HOUR), 0), 0);
 
@@ -381,7 +411,7 @@ export default function OracleTerminal() {
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [nextRoundTime, isTokenLocked, isProcessing, lastPayouts, peakRoi, potSol, simulatePayout, updateBonus]);
+    }, [nextRoundTime, isTokenLocked, isProcessing, lastPayouts, peakRoi, potSol, simulatePayout, updateBonus, isSimulationMode]);
 
     const currentRoundType = nextRoundTime?.getHours() === ANCHOR_HOUR && nextRoundTime?.getMinutes() === 0
         ? 'ANCHOR'
