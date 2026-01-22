@@ -31,8 +31,7 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
         const oneHourAgo = Date.now() - (60 * 60 * 1000);
 
         // Fetch latest Solana pairs from internal API proxy (to bypass CORS)
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-        const response = await fetch(`${baseUrl}/api/tokens?source=dex`, {
+        const response = await fetch('/api/tokens?source=dex', {
             cache: 'no-store'
         });
 
@@ -127,8 +126,7 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
 async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
     try {
         console.log('Trying Pump.fun latest for fresh tokens via proxy...');
-        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-        const response = await fetch(`${baseUrl}/api/tokens?source=pump`, {
+        const response = await fetch('/api/tokens?source=pump', {
             cache: 'no-store'
         });
 

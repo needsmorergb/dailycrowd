@@ -325,14 +325,17 @@ export default function OracleTerminal() {
             // QA MODE: Accelerated Round (5x Speed)
             if (isSimulationMode) {
                 // Determine virtual time based on 5x speedup
-                // If 1 real second passes, 5 virtual seconds pass
-                // We'll base the countdown on the real-time start of the minute for stability
-                const realSecsSinceHour = zonedNow.getMinutes() * 60 + zonedNow.getSeconds();
-                const virtSecsSinceHour = realSecsSinceHour * 5;
+                // If 1 real 200ms tick passes, 1 virtual second pass
+                // For demonstration, we'll base it on Date.now() for linear speed
+                const virtElapsedTotal = Math.floor((Date.now() - roundStartTime) * 0.005); // 1ms = 0.005 virtual seconds (approx 5x)
 
-                const cycleSecs = 30 * 60; // 30 minute rounds
-                const currentCycleSecs = virtSecsSinceHour % cycleSecs;
-                const secsRemaining = cycleSecs - currentCycleSecs;
+                // Using a more predictable 5x speed for demonstration:
+                // Every 1 real minute = 5 virtual minutes
+                const cycleSecs = 30 * 60;
+                const realSecsFromStart = Math.floor((Date.now() - roundStartTime) / 1000);
+                const virtSecsFromStart = realSecsFromStart * 5;
+
+                const secsRemaining = cycleSecs - (virtSecsFromStart % cycleSecs);
 
                 if (secsRemaining <= 0) {
                     setPotSol(1.36);
@@ -407,7 +410,7 @@ export default function OracleTerminal() {
 
         const timer = setInterval(() => {
             setTimeLeft(calculateTimeLeft());
-        }, 1000);
+        }, isSimulationMode ? 200 : 1000); // 5x speed: 1s virtual = 200ms real
 
         return () => clearInterval(timer);
     }, [nextRoundTime, isTokenLocked, isProcessing, lastPayouts, peakRoi, potSol, simulatePayout, updateBonus, isSimulationMode]);
