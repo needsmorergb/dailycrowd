@@ -14,15 +14,167 @@ export interface PumpTokenApiResponse {
     volume_30m: number;
     volatility_5m: number;
     image_uri?: string;
+    complete?: boolean;
+    bonding_curve_percentage?: number;
 }
 
+/**
+ * Primary fetch: High-volume Solana tokens from Dexscreener
+ * Searches for ANY trending tokens with active trading
+ */
 export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
     try {
+        console.log('Fetching high-volume Solana tokens...');
+
+        // Fetch trending Solana pairs sorted by 24h volume
+        const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112');
+
+        if (!response.ok) {
+            console.log('Dexscreener trending failed, trying search...');
+            return await fetchBySearch();
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.pairs || data.pairs.length === 0) {
+            return await fetchBySearch();
+        }
+
+        const candidates: TokenCandidate[] = [];
+        const seenMints = new Set<string>();
+
+        // Filter for high-volume Solana pairs
+        const validPairs = data.pairs.filter((p: any) =>
+            p.chainId === 'solana' &&
+            p.liquidity?.usd > 10000 &&
+            p.volume?.h24 > 50000 &&
+            p.baseToken?.address &&
+            p.priceUsd
+        );
+
+        validPairs.slice(0, 30).forEach((pair: any) => {
+            if (seenMints.has(pair.baseToken.address)) return;
+
+            seenMints.add(pair.baseToken.address);
+
+            const isPumpToken = pair.baseToken.address.endsWith('pump');
+            const marketCap = pair.marketCap || pair.fdv || 0;
+
+            let bondingProgress = 100;
+            if (isPumpToken && marketCap < 69000) {
+                bondingProgress = Math.min(100, (marketCap / 69000) * 100);
+            }
+
+            candidates.push({
+                mint: pair.baseToken.address,
+                symbol: pair.baseToken.symbol,
+                name: pair.baseToken.name,
+                createdAt: pair.pairCreatedAt || Date.now(),
+                vol5m: pair.volume?.m5 || 0,
+                trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
+                uniqueTraders5m: 0,
+                vol30m: (pair.volume?.m5 || 0) * 6,
+                volatility5m: Math.abs(pair.priceChange?.m5 || 0),
+                price: parseFloat(pair.priceUsd || '0'),
+                mcUsd: marketCap,
+                bondingProgress,
+                image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
+            });
+        });
+
+        if (candidates.length > 0) {
+            console.log(`Found ${candidates.length} high-volume tokens`);
+            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
+        }
+
+        return await fetchBySearch();
+    } catch (error) {
+        console.error('High-volume fetch error:', error);
+        return await fetchBySearch();
+    }
+}
+
+/**
+ * Secondary: Search-based fetch for diverse tokens
+ */
+async function fetchBySearch(): Promise<TokenCandidate[]> {
+    try {
+        console.log('Searching for diverse high-volume tokens...');
+
+        const queries = ['SOL', 'BONK', 'JUP', 'WIF', 'PYTH'];
+
+        const results = await Promise.all(
+            queries.map(q =>
+                fetch(`https://api.dexscreener.com/latest/dex/search/?q=${q}`)
+                    .then(res => res.ok ? res.json() : null)
+                    .catch(() => null)
+            )
+        );
+
+        const candidates: TokenCandidate[] = [];
+        const seenMints = new Set<string>();
+
+        results.forEach(data => {
+            if (!data || !data.pairs) return;
+
+            const validPairs = data.pairs.filter((p: any) =>
+                p.chainId === 'solana' &&
+                p.liquidity?.usd > 5000 &&
+                p.volume?.h24 > 10000 &&
+                p.baseToken?.address
+            );
+
+            validPairs.forEach((pair: any) => {
+                if (seenMints.has(pair.baseToken.address)) return;
+
+                seenMints.add(pair.baseToken.address);
+
+                const isPumpToken = pair.baseToken.address.endsWith('pump');
+                const marketCap = pair.marketCap || pair.fdv || 0;
+
+                let bondingProgress = 100;
+                if (isPumpToken && marketCap < 69000) {
+                    bondingProgress = Math.min(100, (marketCap / 69000) * 100);
+                }
+
+                candidates.push({
+                    mint: pair.baseToken.address,
+                    symbol: pair.baseToken.symbol,
+                    name: pair.baseToken.name,
+                    createdAt: pair.pairCreatedAt || Date.now(),
+                    vol5m: pair.volume?.m5 || 0,
+                    trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
+                    uniqueTraders5m: 0,
+                    vol30m: (pair.volume?.m5 || 0) * 6,
+                    volatility5m: Math.abs(pair.priceChange?.m5 || 0),
+                    price: parseFloat(pair.priceUsd || '0'),
+                    mcUsd: marketCap,
+                    bondingProgress,
+                    image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
+                });
+            });
+        });
+
+        if (candidates.length > 0) {
+            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
+        }
+
+        return await fetchPumpFunTokens();
+    } catch (error) {
+        console.error('Search fetch error:', error);
+        return await fetchPumpFunTokens();
+    }
+}
+
+/**
+ * Tertiary: Pump.fun API fallback
+ */
+async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
+    try {
+        console.log('Fetching from Pump.fun API...');
         const response = await fetch('https://frontend-api.pump.fun/coins/trending?limit=20&offset=0', {
             method: 'GET',
-            headers: {
-                'Accept': 'application/json',
-            }
+            headers: { 'Accept': 'application/json' }
         });
 
         if (!response.ok) throw new Error('Failed to fetch from Pump.fun');
@@ -43,93 +195,34 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
             volatility5m: coin.volatility_5m || (Math.random() * 2),
             price: (coin.usd_market_cap / 1000000000) * (1 + Math.random() * 0.1),
             mcUsd: coin.usd_market_cap,
-            bondingProgress: (coin.usd_market_cap / 69000) * 100,
+            bondingProgress: coin.complete ? 100 : (coin.bonding_curve_percentage ?? Math.min(100, (coin.usd_market_cap / 69000) * 100)),
             image: coin.image_uri || `https://dd.dexscreener.com/ds-data/tokens/solana/${coin.mint}.png`
         }));
     } catch (error) {
-        return await fetchFallbackTokens();
+        console.error('Pump.fun API error:', error);
+        return await fetchStaticFallback();
     }
 }
 
-async function fetchFallbackTokens(): Promise<TokenCandidate[]> {
-    try {
-        console.log('Fetching dynamic ecosystem tokens...');
+/**
+ * Last resort: Static fallback
+ */
+async function fetchStaticFallback(): Promise<TokenCandidate[]> {
+    console.warn('Using static fallback token list');
 
-        // Search queries for ecosystems requested by user (including Pump)
-        const queries = ['Pump', 'Bonk', 'Bags', 'WLFI', 'USD1'];
-
-        // Parallel fetch for all search queries
-        const results = await Promise.all(
-            queries.map(q =>
-                fetch(`https://api.dexscreener.com/latest/dex/search/?q=${q}`)
-                    .then(res => res.ok ? res.json() : null)
-                    .catch(err => null)
-            )
-        );
-
-        const candidates: TokenCandidate[] = [];
-        const seenMints = new Set<string>();
-
-        // Process results from all queries
-        results.forEach(data => {
-            if (!data || !data.pairs) return;
-
-            // Filter for Solana pairs with decent liquidity/volume
-            const validPairs = data.pairs.filter((p: any) =>
-                p.chainId === 'solana' &&
-                p.liquidity?.usd > 10000 &&
-                p.volume?.h24 > 50000 &&
-                p.baseToken?.address
-            );
-
-            validPairs.forEach((pair: any) => {
-                if (seenMints.has(pair.baseToken.address)) return;
-
-                seenMints.add(pair.baseToken.address);
-                candidates.push({
-                    mint: pair.baseToken.address,
-                    symbol: pair.baseToken.symbol,
-                    name: pair.baseToken.name,
-                    createdAt: pair.pairCreatedAt || Date.now(),
-                    vol5m: pair.volume?.m5 || 0,
-                    trades5m: (pair.txns?.m5?.buys || 0) + (pair.txns?.m5?.sells || 0),
-                    uniqueTraders5m: 0,
-                    vol30m: (pair.volume?.m5 || 0) * 6,
-                    volatility5m: Math.abs(pair.priceChange?.m5 || 0),
-                    price: parseFloat(pair.priceUsd || '0'),
-                    mcUsd: pair.marketCap || pair.fdv || 0,
-                    bondingProgress: 100,
-                    image: pair.info?.imageUrl || `https://dd.dexscreener.com/ds-data/tokens/solana/${pair.baseToken.address}.png`
-                });
-            });
-        });
-
-        // If dynamic fetch yields results, return them (random selection happens downstream)
-        if (candidates.length > 0) {
-            // Sort by 24h volume to ensure quality
-            return candidates.sort((a, b) => b.vol30m - a.vol30m).slice(0, 20);
-        }
-
-        throw new Error('No dynamic candidates found');
-
-    } catch (error) {
-        console.error('Dynamic Fallback Error:', error);
-
-        // Static "Disaster Recovery" list if even Dexscreener search fails
-        return [{
-            mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump', // Billy
-            symbol: 'BILLY',
-            name: 'Billy',
-            createdAt: Date.now(),
-            vol5m: 12000,
-            trades5m: 1500,
-            uniqueTraders5m: 400,
-            vol30m: 50000,
-            volatility5m: 2.5,
-            price: 0.02,
-            mcUsd: 20000000,
-            bondingProgress: 100,
-            image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
-        }];
-    }
+    return [{
+        mint: '3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump',
+        symbol: 'BILLY',
+        name: 'Billy',
+        createdAt: Date.now(),
+        vol5m: 12000,
+        trades5m: 1500,
+        uniqueTraders5m: 400,
+        vol30m: 50000,
+        volatility5m: 2.5,
+        price: 0.02,
+        mcUsd: 20000000,
+        bondingProgress: 100,
+        image: 'https://dd.dexscreener.com/ds-data/tokens/solana/3B5wuUrMEi5yATD7on46hKfej3pfmd7t1RKgrsN3pump.png'
+    }];
 }

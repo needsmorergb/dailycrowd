@@ -32,7 +32,7 @@ import { fetchLatestPumpTokens } from '../utils/pumpData';
 const ANCHOR_HOUR = 17; // 5 PM
 const TIMEZONE = 'America/Los_Angeles';
 
-const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || 'TreasuryAddressGoesHere';
+const TREASURY_ADDRESS = process.env.NEXT_PUBLIC_TREASURY_ADDRESS || '8cvZYYnEkNMqZA1gaPWGcd26MBbdS3rR2z2aigmU1foQ';
 
 const MIN_FEES = {
     RAPID: 0.03,
@@ -47,6 +47,18 @@ export default function OracleTerminal() {
     // QA / Simulation Gating (Moved to top for logic gating)
     const [isSimulationMode, setIsSimulationMode] = useState(false);
     const [logoClickCount, setLogoClickCount] = useState(0);
+
+    // Detect QA mode from URL parameters (?qa=true or ?sim=true)
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const qaMode = params.get('qa') === 'true' || params.get('sim') === 'true';
+            if (qaMode) {
+                setIsSimulationMode(true);
+                console.log('QA Mode activated via URL parameter');
+            }
+        }
+    }, []);
 
     // Check URL for simulation trigger on mount
     useEffect(() => {
@@ -71,6 +83,7 @@ export default function OracleTerminal() {
     // Round Logic State
     const [roundStartTime] = useState<number>(() => Date.now());
     const [launchPrice, setLaunchPrice] = useState<number>(0);
+    const [currentPrice, setCurrentPrice] = useState<number>(0);
 
     // Initialize simulation state on mount to avoid hydration mismatch
     useEffect(() => {
@@ -93,6 +106,15 @@ export default function OracleTerminal() {
     const [lobbyPlayers, setLobbyPlayers] = useState(0);
     const [lobbyEndTime] = useState(Date.now() + 15 * 60 * 1000); // 15 min lobby
     const [elapsedLobbyTime, setElapsedLobbyTime] = useState(0);
+
+    // Auto-activate round in QA mode
+    useEffect(() => {
+        if (isSimulationMode && roundState === 'ANNOUNCED') {
+            console.log('[QA] Auto-activating round for immediate gameplay');
+            setRoundState('ACTIVE');
+            setLobbyPlayers(MIN_PLAYERS);
+        }
+    }, [isSimulationMode]);
 
     const MIN_PLAYERS = 15;
     const MIN_POT = 0.45;
@@ -186,7 +208,9 @@ export default function OracleTerminal() {
                     const { chosen } = await selector.selectTargetToken('initial', Date.now(), liveTokens);
                     setSelectedToken(chosen);
                     // Use a slightly lower price as "launch" to simulate immediate ROI
-                    setLaunchPrice((chosen.price || 0.00001) * 0.95);
+                    const initialPrice = (chosen.price || 0.00001) * 0.95;
+                    setLaunchPrice(initialPrice);
+                    setCurrentPrice(chosen.price || 0.00001);
                 }
             }
             setIsLoadingTokens(false);
@@ -229,8 +253,8 @@ export default function OracleTerminal() {
         if (!isSimulationMode) return;
 
         const interval = setInterval(() => {
-            // 1. Simulate Pot/Burn from "other players"
-            if (Math.random() > 0.92) {
+            // 1. Simulate Pot/Burn from "other players" - MORE FREQUENT in QA mode
+            if (Math.random() > 0.75) { // Increased from 0.92 to 0.75 for more activity
                 const entrySize = Math.random() * 0.5 + 0.03;
                 setPotSol(prev => prev + (entrySize * 0.8));
                 setBurnedTokens(prev => prev + Math.floor(Math.random() * 50 + 10));
@@ -246,21 +270,25 @@ export default function OracleTerminal() {
                     roi: randRoi,
                     color: parseFloat(randRoi) > 10 ? 'text-neon-green' : 'text-neon-purple'
                 }, ...prev.slice(0, 4)]);
+
+                // Log simulated bet for QA visibility
+                console.log(`[QA] Simulated bet: ${user} predicted ${randRoi} with ${entrySize.toFixed(3)} SOL`);
             }
 
             // 2. Simulate Market Activity using token volatility
             if (activeBonus) { // Just a heartbeat check
                 const tokenVol = selectedToken?.volatility5m || 0.5;
                 const movement = (Math.random() * 0.2 - 0.1) * tokenVol; // Scaled by token vol
-                const lastPrice = peakVwap || launchPrice;
+                const lastPrice = currentPrice || peakVwap || launchPrice;
                 const newPrice = lastPrice * (1 + movement);
                 const volume = Math.random() * 5000 + 500;
+                setCurrentPrice(newPrice);
                 addTrade(newPrice, volume);
             }
         }, 2000);
 
         return () => clearInterval(interval);
-    }, [peakVwap, launchPrice, addTrade, selectedToken, activeBonus, isSimulationMode]);
+    }, [peakVwap, launchPrice, addTrade, selectedToken, activeBonus, isSimulationMode, currentPrice]);
 
     useEffect(() => {
         const calculateTimeLeft = () => {
@@ -688,7 +716,7 @@ export default function OracleTerminal() {
                                                 </div>
                                                 <div>
                                                     <p className="text-[10px] font-black uppercase text-primary/60">Current ROI</p>
-                                                    <p className="font-mono font-bold text-neon-purple">{(peakVwap / (launchPrice || 1)).toFixed(1)}x</p>
+                                                    <p className="font-mono font-bold text-neon-purple">{((currentPrice || launchPrice) / (launchPrice || 1)).toFixed(1)}x</p>
                                                 </div>
                                             </div>
 
@@ -859,6 +887,45 @@ export default function OracleTerminal() {
                                             <span className="text-neon-purple">Top 12%</span>
                                         </div>
                                     </div>
+
+                                    {/* HOLDERS VIEW - Exclusive Insights */}
+                                    {showHoldersView && isTokenHolder && (
+                                        <div className="w-full mb-8 p-6 bg-gradient-to-br from-neon-purple/10 to-neon-green/10 rounded-xl border-2 border-neon-purple/30 animate-in fade-in slide-in-from-bottom-2">
+                                            <div className="flex items-center gap-2 mb-4">
+                                                <span className="material-symbols-outlined text-neon-purple">insights</span>
+                                                <h3 className="text-sm font-black uppercase tracking-wider text-primary">Crowd Distribution Insights</h3>
+                                            </div>
+
+                                            {/* Prediction Distribution Histogram */}
+                                            <div className="mb-4">
+                                                <p className="text-[10px] font-bold uppercase text-primary/60 mb-2">Prediction Density</p>
+                                                <div className="flex items-end justify-between h-20 gap-1">
+                                                    {[15, 35, 55, 75, 90, 70, 45, 25, 10, 5].map((height, i) => (
+                                                        <div key={i} className="flex-1 bg-neon-purple/30 rounded-t" style={{ height: `${height}%` }}>
+                                                            <div className="w-full bg-neon-purple rounded-t" style={{ height: `${Math.random() * 40 + 20}%` }}></div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <div className="flex justify-between mt-1 text-[8px] font-mono text-primary/40">
+                                                    <span>0x</span>
+                                                    <span>15x</span>
+                                                    <span>30x</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Crowd Sentiment */}
+                                            <div className="grid grid-cols-2 gap-3 text-[10px]">
+                                                <div className="bg-white/50 p-3 rounded-lg">
+                                                    <p className="font-bold text-primary/60 mb-1">Avg Prediction</p>
+                                                    <p className="text-lg font-black text-neon-purple">14.2x</p>
+                                                </div>
+                                                <div className="bg-white/50 p-3 rounded-lg">
+                                                    <p className="font-bold text-primary/60 mb-1">Crowd Sentiment</p>
+                                                    <p className="text-lg font-black text-neon-green">Bullish</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Stats Grid */}
                                     <div className="grid grid-cols-1 gap-4 w-full">
