@@ -470,20 +470,20 @@ export default function OracleTerminal() {
 
                         <div className="flex items-center gap-2">
                             <a
-                                href="https://t.me/dailycrowd"
+                                href="https://t.me/CROWD_CTRL_BOT"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="size-9 bg-white border-2 border-primary rounded-lg flex items-center justify-center hover:bg-neon-green transition-all shadow-[2px_2px_0px_0px_#141414] group"
-                                title="Join Telegram"
+                                title="Message @CROWD_CTRL_BOT"
                             >
                                 <span className="material-symbols-outlined text-lg">send</span>
                             </a>
                             <a
-                                href="https://x.com/dailycrowd"
+                                href="https://x.com/CROWD_ORACLE"
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="size-9 bg-white border-2 border-primary rounded-lg flex items-center justify-center hover:bg-neon-green transition-all shadow-[2px_2px_0px_0px_#141414] group"
-                                title="Follow on X"
+                                title="Follow @CROWD_ORACLE"
                             >
                                 <span className="flex items-center justify-center font-black text-sm">X</span>
                             </a>
