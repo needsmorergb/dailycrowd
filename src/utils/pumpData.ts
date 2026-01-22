@@ -30,11 +30,14 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
 
         const oneHourAgo = Date.now() - (60 * 60 * 1000);
 
-        // Fetch latest Solana pairs from Dexscreener
-        const response = await fetch('https://api.dexscreener.com/latest/dex/tokens/So11111111111111111111111111111111111111112');
+        // Fetch latest Solana pairs from internal API proxy (to bypass CORS)
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const response = await fetch(`${baseUrl}/api/tokens?source=dex`, {
+            cache: 'no-store'
+        });
 
         if (!response.ok) {
-            console.log('Dexscreener primary failed, trying fallback search...');
+            console.log('API proxy primary failed, trying fallback...');
             return await fetchPumpFunTokens();
         }
 
@@ -123,10 +126,13 @@ export async function fetchLatestPumpTokens(): Promise<TokenCandidate[]> {
  */
 async function fetchPumpFunTokens(): Promise<TokenCandidate[]> {
     try {
-        console.log('Trying Pump.fun latest for fresh tokens...');
-        const response = await fetch('https://frontend-api.pump.fun/coins/latest?limit=50&offset=0');
+        console.log('Trying Pump.fun latest for fresh tokens via proxy...');
+        const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+        const response = await fetch(`${baseUrl}/api/tokens?source=pump`, {
+            cache: 'no-store'
+        });
 
-        if (!response.ok) throw new Error('Pump.fun fetch failed');
+        if (!response.ok) throw new Error('Pump.fun proxy fetch failed');
 
         const data: PumpTokenApiResponse[] = await response.json();
         const oneHourAgo = Date.now() - (60 * 60 * 1000);

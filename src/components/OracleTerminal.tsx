@@ -324,24 +324,23 @@ export default function OracleTerminal() {
 
             // QA MODE: Accelerated Round (5x Speed)
             if (isSimulationMode) {
-                // We want a full round to appear as 6 minutes instead of 30
-                // We'll use a virtual target time for display
-                const virtualBase = startOfHour(zonedNow);
-                const minutes = zonedNow.getMinutes();
-                const currentCycle = Math.floor(minutes / 6); // 6-minute cycles
-                const targetCycleMinutes = (currentCycle + 1) * 6;
-                const targetTime = setSeconds(setMinutes(virtualBase, targetCycleMinutes), 0);
+                // Determine virtual time based on 5x speedup
+                // If 1 real second passes, 5 virtual seconds pass
+                // We'll base the countdown on the real-time start of the minute for stability
+                const realSecsSinceHour = zonedNow.getMinutes() * 60 + zonedNow.getSeconds();
+                const virtSecsSinceHour = realSecsSinceHour * 5;
 
-                const diff = differenceInSeconds(targetTime, zonedNow);
+                const cycleSecs = 30 * 60; // 30 minute rounds
+                const currentCycleSecs = virtSecsSinceHour % cycleSecs;
+                const secsRemaining = cycleSecs - currentCycleSecs;
 
-                if (diff <= 0) {
-                    // Trigger round reset logic (simplified for QA)
+                if (secsRemaining <= 0) {
                     setPotSol(1.36);
-                    return { hours: '00', minutes: '06', seconds: '00' };
+                    return { hours: '00', minutes: '30', seconds: '00' };
                 }
 
-                const m = Math.floor(diff / 60);
-                const s = Math.floor(diff % 60);
+                const m = Math.floor(secsRemaining / 60);
+                const s = Math.floor(secsRemaining % 60);
 
                 return {
                     hours: '00',
